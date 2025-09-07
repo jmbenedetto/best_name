@@ -71,7 +71,7 @@ wheels = [
 ]
 
 [[package]]
-name = "best-name"
+name = "best_name"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

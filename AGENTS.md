@@ -8,7 +8,7 @@ This is a CLI tool that suggests the most appropriate name for any given file us
 
 ```
 file-namer-cli/
-├── file_namer.py              # Single Python file containing all CLI logic
+├── best_name_core.py          # Single Python file containing all CLI logic
 ├── config.yaml                # Default configuration and settings
 ├── conventions.md     # Default naming conventions and categories
 ├── system_prompt.md   # Default system prompt for LLM
@@ -55,8 +55,9 @@ best_name /path/to/file.pdf \
 - **Output**: String with suggested filename (without extension)
 
 ### Technical Constraints
-- **Single file architecture**: All code in `file_namer.py`
+- **Single file architecture**: All code in `best_name_core.py`
 - **Package management**: Use `uv add` for all dependencies
+- **CLI tool**: Use `uv tool install best_name` to install the CLI tool.
 - **File processing**: Use Docling for file content extraction
 - **LLM integration**: OpenRouter API for name generation
 - **Configuration**: YAML config file for defaults
