@@ -25,18 +25,18 @@ file-namer-cli/
 
 ```bash
 # Basic usage - suggest name for a file (uses defaults)
-best-name /path/to/file.pdf
+best_name /path/to/file.pdf
 
 # With custom conventions and categories
-best-name /path/to/file.pdf \
+best_name /path/to/file.pdf \
   --conventions custom_conventions.md
 
 # With custom system prompt
-best-name /path/to/file.pdf \
+best_name /path/to/file.pdf \
   --system-prompt custom_system_prompt.md
 
 # With all optional arguments
-best-name /path/to/file.pdf \
+best_name /path/to/file.pdf \
   --conventions custom_conventions.md \
   --system-prompt custom_system_prompt.md \
   --api-key YOUR_API_KEY \
@@ -114,17 +114,17 @@ file_path: str  # Path to the file to be renamed
 
 ```bash
 # Test with default conventions and prompt
-best-name test_files/document.pdf
+best_name test_files/document.pdf
 
 # Test with custom conventions
-best-name test_files/image.jpg --conventions my_rules.md
+best_name test_files/image.jpg --conventions my_rules.md
 
 # Test with different models
-best-name file.pdf --model claude-3-5-sonnet
+best_name file.pdf --model claude-3-5-sonnet
 
 # Test with different file types
-best-name test_files/spreadsheet.xlsx
-best-name test_files/presentation.pptx
+best_name test_files/spreadsheet.xlsx
+best_name test_files/presentation.pptx
 ```
 
 ## Key Dependencies
