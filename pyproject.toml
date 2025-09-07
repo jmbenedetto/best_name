@@ -1,7 +1,16 @@
 [project]
-name = "best-name"
+name = "best_name"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "click>=8.2.1",
+    "docling>=2.51.0",
+    "openai>=1.106.1",
+    "python-dotenv>=1.1.1",
+    "pyyaml>=6.0.2",
+]
+
+[project.scripts]
+best_name = "file_namer:cli"

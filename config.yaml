@@ -8,3 +8,32 @@ openrouter:
 defaults:
   conventions_file: "conventions.md"
   system_prompt_file: "system_prompt.md"
+
+# Supported formats and languages
+supported_formats:
+  - txt
+  - md
+  - csv
+  - json
+  - yaml
+  - yml
+  - xml
+  - html
+  - htm
+  - css
+  - jpg
+  - jpeg
+  - png
+  - gif
+  - svg
+  - ico
+  - pdf
+  - docx
+  - xlsx
+  - pptx
+
+supported_languages:
+  - English
+  - Spanish
+  - French
+  - Portuguese
