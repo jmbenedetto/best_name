@@ -14,3 +14,6 @@ dependencies = [
 
 [project.scripts]
 best_name = "file_namer:cli"
+
+[tool.uv]
+package = true
