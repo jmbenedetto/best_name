@@ -103,13 +103,11 @@ def prepare_prompt(system_prompt: str, conventions_md: str, file_content: str) -
     content = file_content[:max_chars]
 
     system_text = (
-        system_prompt.strip() +
+        system_prompt.strip() + "\n\n" + conventions_md.strip()
         "\n\nYou must strictly adhere to the naming conventions and categories provided by the user message.\n"
     )
     user_text = (
-        "Naming conventions and categories (markdown):\n" + conventions_md.strip() +
         "\n\nFile content (truncated):\n" + content.strip() +
-        "\n\nReturn only the suggested filename without any extension, no quotes."
     )
     messages = [
         {"role": "system", "content": system_text},

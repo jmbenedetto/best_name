@@ -4,7 +4,19 @@ Suggest the most appropriate name for a file based on its content using an LLM.
 
 ### Installation
 
-Requires Python 3.12+. Install dependencies with uv:
+Requires Python 3.12+.
+
+Install as a global CLI with uv (after cloning/downloading this repo):
+
+```bash
+cd /home/jmb/Documents/code/best_name
+uv tool install -e .
+
+# verify
+best_name --help
+```
+
+Alternatively, install dependencies for local development:
 
 ```bash
 uv sync
