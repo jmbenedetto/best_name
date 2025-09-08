@@ -1,7 +1,7 @@
 # Default OpenRouter settings
 openrouter:
   api_key: ${OPENROUTER_API_KEY}  # Read from environment variable
-  model: "gpt-5-mini"
+  model: "gpt-5"
   base_url: "https://openrouter.ai/api/v1"
 
 # Default file paths

@@ -56,7 +56,7 @@ best_name /path/to/file.pdf \
 
 ### Technical Constraints
 - **Single file architecture**: All code in `best_name_core.py`
-- **Package management**: Use `uv add` for all dependencies
+- **Package management and script running**: Use `uv add` for all dependencies and `uv run` to run the script.
 - **CLI tool**: Use `uv tool install best_name` to install the CLI tool.
 - **File processing**: Use Docling for file content extraction
 - **LLM integration**: OpenRouter API for name generation

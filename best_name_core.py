@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from typing import Optional
@@ -104,10 +105,9 @@ def prepare_prompt(system_prompt: str, conventions_md: str, file_content: str) -
 
     system_text = (
         system_prompt.strip() + "\n\n" + conventions_md.strip()
-        "\n\nYou must strictly adhere to the naming conventions and categories provided by the user message.\n"
     )
     user_text = (
-        "\n\nFile content (truncated):\n" + content.strip() +
+        "\n\nFile content (truncated):\n" + content.strip()
     )
     messages = [
         {"role": "system", "content": system_text},
@@ -116,7 +116,7 @@ def prepare_prompt(system_prompt: str, conventions_md: str, file_content: str) -
     return messages, len(content)
 
 
-def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict]) -> str:
+def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict], verbose: bool = False) -> tuple[str, dict]:
     if OpenAI is None:
         raise RuntimeError("openai package is not installed")
     client = OpenAI(base_url=base_url, api_key=api_key)
@@ -126,7 +126,12 @@ def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict
         temperature=0.2,
         max_tokens=32,
     )
-    return resp.choices[0].message.content.strip()
+    
+    # Return both the content and full response for verbose mode
+    content = resp.choices[0].message.content.strip() if resp.choices[0].message.content else ""
+    full_response = resp.model_dump() if verbose else {}
+    
+    return content, full_response
 
 
 @click.command(name="best_name")
@@ -136,13 +141,19 @@ def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict
 @click.option("--api-key", "api_key_opt", type=str, default=None, help="OpenRouter API key")
 @click.option("--model", "model_opt", type=str, default=None, help="LLM model name")
 @click.option("--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL")
+@click.option("--verbose", is_flag=True, default=False, help="Show detailed processing steps")
 def cli(file_path: Path,
         conventions_path: Optional[Path],
         system_prompt_path: Optional[Path],
         api_key_opt: Optional[str],
         model_opt: Optional[str],
-        base_url_opt: Optional[str]) -> None:
+        base_url_opt: Optional[str],
+        verbose: bool) -> None:
     """Suggest the best filename for FILE_PATH based on its content."""
+
+    if verbose:
+        click.echo("=== Best Name CLI - Verbose Mode ===\n")
+        click.echo(f"Step 1: Loading configuration from {Path.cwd()}")
 
     load_dotenv()
 
@@ -153,6 +164,11 @@ def cli(file_path: Path,
     defaults = (config.get("defaults") or {})
     openrouter_cfg = (config.get("openrouter") or {})
 
+    if verbose:
+        click.echo(f"Step 2: Resolving file paths")
+        click.echo(f"  Project directory: {project_dir}")
+        click.echo(f"  Config file: {config_path}")
+
     # Resolve defaults
     conventions_default = resolve_path(project_dir, defaults.get("conventions_file"))
     system_prompt_default = resolve_path(project_dir, defaults.get("system_prompt_file"))
@@ -160,8 +176,17 @@ def cli(file_path: Path,
     conventions_file = conventions_path or conventions_default
     system_prompt_file = system_prompt_path or system_prompt_default
 
+    if verbose:
+        click.echo(f"  Conventions file: {conventions_file}")
+        click.echo(f"  System prompt file: {system_prompt_file}")
+
     conventions_md = read_text_file(conventions_file) if (conventions_file and conventions_file.exists()) else ""
     system_prompt = read_text_file(system_prompt_file) if (system_prompt_file and system_prompt_file.exists()) else "You are a helpful assistant that names files based on content."
+
+    if verbose:
+        click.echo(f"\nStep 3: Loading content files")
+        click.echo(f"  Conventions loaded: {len(conventions_md)} characters")
+        click.echo(f"  System prompt loaded: {len(system_prompt)} characters")
 
     # Determine OpenRouter settings (env > CLI > config)
     api_key = os.getenv("OPENROUTER_API_KEY") or api_key_opt or openrouter_cfg.get("api_key") or ""
@@ -172,18 +197,85 @@ def cli(file_path: Path,
     model = model_opt or openrouter_cfg.get("model") or "gpt-4o-mini"
     base_url = base_url_opt or openrouter_cfg.get("base_url") or "https://openrouter.ai/api/v1"
 
+    if verbose:
+        click.echo(f"\nStep 4: OpenRouter configuration")
+        click.echo(f"  Model: {model}")
+        click.echo(f"  Base URL: {base_url}")
+        click.echo(f"  API Key: {'*' * (len(api_key) - 4) + api_key[-4:] if len(api_key) > 4 else '***'}")
+
     # Extract content
+    if verbose:
+        click.echo(f"\nStep 5: Extracting content from {file_path}")
+
     content = extract_file_content(file_path)
     if not content or not content.strip():
         # Generic name based on extension per requirements
         ext = file_path.suffix.lstrip(".") or "file"
+        if verbose:
+            click.echo(f"  No content extracted, using generic name")
         click.echo(f"untitled_{ext}")
         return
 
-    messages, _ = prepare_prompt(system_prompt, conventions_md, content)
+    if verbose:
+        click.echo(f"  Content extracted: {len(content)} characters")
 
-    raw_name = call_openrouter(api_key=api_key, base_url=base_url, model=model, messages=messages)
+    messages, content_len = prepare_prompt(system_prompt, conventions_md, content)
+
+    if verbose:
+        click.echo(f"\nStep 6: Preparing LLM prompt")
+        click.echo(f"  Content truncated to: {content_len} characters")
+        click.echo(f"\n--- System Message ---")
+        click.echo(messages[0]["content"])
+        click.echo(f"\n--- User Message ---")
+        click.echo(messages[1]["content"])
+        click.echo(f"\n--- Combined Message (sent to LLM) ---")
+        for i, msg in enumerate(messages):
+            click.echo(f"Message {i+1} ({msg['role']}): {len(msg['content'])} characters")
+
+    if verbose:
+        click.echo(f"\nStep 7: Calling OpenRouter API")
+
+    raw_name, full_response = call_openrouter(api_key=api_key, base_url=base_url, model=model, messages=messages, verbose=verbose)
+    
+    if verbose:
+        click.echo(f"\n--- Complete LLM Exchange ---")
+        if full_response:
+            click.echo(f"Request sent to LLM:")
+            request_info = {
+                "model": model,
+                "messages": messages,
+                "temperature": 0.2,
+                "max_tokens": 32
+            }
+            click.echo(json.dumps(request_info, indent=2, ensure_ascii=False))
+            
+            click.echo(f"\nFull LLM Response:")
+            click.echo(json.dumps(full_response, indent=2, ensure_ascii=False))
+            
+            # Extract and display reasoning if available
+            if full_response.get("choices") and len(full_response["choices"]) > 0:
+                choice = full_response["choices"][0]
+                if choice.get("message", {}).get("content"):
+                    click.echo(f"\nLLM Reasoning/Content:")
+                    click.echo(f"'{choice['message']['content']}'")
+                
+                # Show usage statistics if available
+                if full_response.get("usage"):
+                    usage = full_response["usage"]
+                    click.echo(f"\nToken Usage:")
+                    click.echo(f"  Prompt tokens: {usage.get('prompt_tokens', 'N/A')}")
+                    click.echo(f"  Completion tokens: {usage.get('completion_tokens', 'N/A')}")
+                    click.echo(f"  Total tokens: {usage.get('total_tokens', 'N/A')}")
+        
+        click.echo(f"\n--- Processing Result ---")
+        click.echo(f"  Raw response: '{raw_name}'")
+
     suggested = sanitize_filename(raw_name)
+    
+    if verbose:
+        click.echo(f"  Sanitized filename: '{suggested}'")
+        click.echo(f"\n=== Final Result ===")
+    
     click.echo(suggested)
 
 
