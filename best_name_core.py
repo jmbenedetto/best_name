@@ -1,7 +1,9 @@
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Optional
+import warnings
 
 import click
 from dotenv import load_dotenv
@@ -91,6 +93,10 @@ def extract_file_content(file_path: Path) -> Optional[str]:
 
 
 def sanitize_filename(name: str) -> str:
+    # Handle empty or None input
+    if not name or not name.strip():
+        return "untitled"
+    
     # Remove path separators and illegal characters for common filesystems
     illegal = "\n\r\t:/\\?*\"'<>|"
     cleaned = "".join(ch if ch not in illegal else " " for ch in name)
@@ -151,6 +157,19 @@ def cli(file_path: Path,
         verbose: bool) -> None:
     """Suggest the best filename for FILE_PATH based on its content."""
 
+    # Suppress logs from external libraries when not in verbose mode
+    if not verbose:
+        # Suppress all logging except critical errors
+        logging.getLogger().setLevel(logging.CRITICAL)
+        logging.getLogger("docling").setLevel(logging.CRITICAL)
+        logging.getLogger("torch").setLevel(logging.CRITICAL)
+        logging.getLogger("transformers").setLevel(logging.CRITICAL)
+        logging.getLogger("openai").setLevel(logging.CRITICAL)
+        logging.getLogger("httpx").setLevel(logging.CRITICAL)
+        logging.getLogger("httpcore").setLevel(logging.CRITICAL)
+        # Suppress all warnings
+        warnings.filterwarnings("ignore")
+
     if verbose:
         click.echo("=== Best Name CLI - Verbose Mode ===\n")
         click.echo(f"Step 1: Loading configuration from {Path.cwd()}")
@@ -194,7 +213,7 @@ def cli(file_path: Path,
         # Let errors bubble up naturally per project constraints
         raise RuntimeError("OPENROUTER_API_KEY is required. Set env var or pass --api-key.")
 
-    model = model_opt or openrouter_cfg.get("model") or "gpt-4o-mini"
+    model = model_opt or openrouter_cfg.get("model") or "gpt-5-mini"
     base_url = base_url_opt or openrouter_cfg.get("base_url") or "https://openrouter.ai/api/v1"
 
     if verbose:
