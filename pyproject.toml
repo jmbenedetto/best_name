@@ -17,3 +17,6 @@ best_name = "best_name_core:cli"
 
 [tool.uv]
 package = true
+
+[tool.setuptools.package-data]
+"*" = ["config.yaml", "conventions.md", "system_prompt.md"]

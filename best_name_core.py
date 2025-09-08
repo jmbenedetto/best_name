@@ -259,9 +259,18 @@ def cli(
 
     load_dotenv()
 
+    # Find package directory (where this module is installed)
+    package_dir = Path(__file__).parent
     project_dir = Path.cwd()
-    # Use custom config path if provided, otherwise default to config.yaml in current directory
-    config_path = config_path_opt or (project_dir / "config.yaml")
+
+    # Use custom config path if provided, otherwise look in package dir first, then current directory
+    if config_path_opt:
+        config_path = config_path_opt
+    else:
+        package_config = package_dir / "config.yaml"
+        project_config = project_dir / "config.yaml"
+        config_path = package_config if package_config.exists() else project_config
+
     config = load_yaml_config(config_path)
 
     defaults = config.get("defaults") or {}
@@ -274,10 +283,24 @@ def cli(
             f"  Config file: {config_path} {'(custom)' if config_path_opt else '(default)'}"
         )
 
-    # Resolve defaults
-    conventions_default = resolve_path(project_dir, defaults.get("conventions_file"))
-    system_prompt_default = resolve_path(
-        project_dir, defaults.get("system_prompt_file")
+    # Resolve defaults - look in package dir first, then project dir
+    conventions_filename = defaults.get("conventions_file") or "conventions.md"
+    system_prompt_filename = defaults.get("system_prompt_file") or "system_prompt.md"
+
+    # For conventions file: check package dir first, then project dir
+    package_conventions = package_dir / conventions_filename
+    project_conventions = resolve_path(project_dir, conventions_filename)
+    conventions_default = (
+        package_conventions if package_conventions.exists() else project_conventions
+    )
+
+    # For system prompt file: check package dir first, then project dir
+    package_system_prompt = package_dir / system_prompt_filename
+    project_system_prompt = resolve_path(project_dir, system_prompt_filename)
+    system_prompt_default = (
+        package_system_prompt
+        if package_system_prompt.exists()
+        else project_system_prompt
     )
 
     conventions_file = conventions_path or conventions_default
