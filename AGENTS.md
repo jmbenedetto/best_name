@@ -111,21 +111,99 @@ file_path: str  # Path to the file to be renamed
 8. Call OpenRouter API with prepared prompt
 9. Return suggested filename (without extension)
 
-## Testing Approach
+## CLI Installation and Setup
 
 ```bash
-# Test with default conventions and prompt
-best_name test_files/document.pdf
+# Install the CLI tool globally
+uv tool install best_name
 
+# Ensure environment variables are set (required)
+export OPENROUTER_API_KEY="your_api_key_here"
+# OR create a .env file with:
+# OPENROUTER_API_KEY=your_api_key_here
+```
+
+## Running Commands
+
+### Basic Usage
+```bash
+# Simple usage with defaults (most common)
+best_name /path/to/file.pdf
+
+# The tool will output just the suggested filename (without extension)
+# Example output: "financial_report_q4_2024"
+```
+
+### Advanced Usage
+```bash
 # Test with custom conventions
-best_name test_files/image.jpg --conventions my_rules.md
+best_name test/image.jpg --conventions my_rules.md
 
 # Test with different models
 best_name file.pdf --model claude-3-5-sonnet
 
+# Test with all custom options
+best_name file.pdf \
+  --conventions custom_conventions.md \
+  --system-prompt custom_system_prompt.md \
+  --api-key YOUR_API_KEY \
+  --model gpt-4o-mini
+```
+
+## Testing the CLI
+
+### Automated Testing
+Use the provided test script to run comprehensive tests:
+
+```bash
+# Run all tests (requires test/ directory with test files)
+./run_tests.sh
+
+# This will:
+# - Test all files in the test/ directory
+# - Generate a CSV report (test_results.md) with timestamps
+# - Include rate limiting (1 second delay between API calls)
+# - Handle API errors gracefully
+# - Show progress for each file tested
+```
+
+### Test Results
+The test script generates a CSV file with:
+- `timestamp`: When the test was run
+- `original_filename`: The input file name
+- `suggested_name`: The AI-generated suggestion (or error message)
+
+```bash
+# View test results
+cat test_results.md
+
+# Example output format:
+# timestamp,original_filename,suggested_name
+# 2024-01-15 10:30:15,document.pdf,quarterly_financial_report
+# 2024-01-15 10:30:17,image.jpg,ERROR: Failed to generate suggestion
+```
+
+### Manual Testing Examples
+```bash
 # Test with different file types
-best_name test_files/spreadsheet.xlsx
-best_name test_files/presentation.pptx
+best_name test/spreadsheet.xlsx
+best_name test/presentation.pptx
+best_name test/text_document.txt
+best_name test/image.png
+
+# Test error handling
+best_name non_existent_file.pdf  # Should handle gracefully
+```
+
+### Test Directory Structure
+```bash
+test/
+├── document.pdf
+├── image.jpg
+├── spreadsheet.xlsx
+├── presentation.pptx
+├── text_file.txt
+└── # Add more test files as needed
 ```
 
 ## Key Dependencies
