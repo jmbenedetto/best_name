@@ -195,6 +195,13 @@ def call_openrouter(
     "--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL"
 )
 @click.option(
+    "--config",
+    "config_path_opt",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to config YAML file (default: config.yaml)",
+)
+@click.option(
     "--copy",
     is_flag=True,
     default=False,
@@ -216,6 +223,7 @@ def cli(
     api_key_opt: Optional[str],
     model_opt: Optional[str],
     base_url_opt: Optional[str],
+    config_path_opt: Optional[Path],
     copy: bool,
     rename: bool,
     verbose: bool,
@@ -252,7 +260,8 @@ def cli(
     load_dotenv()
 
     project_dir = Path.cwd()
-    config_path = project_dir / "config.yaml"
+    # Use custom config path if provided, otherwise default to config.yaml in current directory
+    config_path = config_path_opt or (project_dir / "config.yaml")
     config = load_yaml_config(config_path)
 
     defaults = config.get("defaults") or {}
@@ -261,7 +270,9 @@ def cli(
     if verbose:
         click.echo(f"Step 2: Resolving file paths")
         click.echo(f"  Project directory: {project_dir}")
-        click.echo(f"  Config file: {config_path}")
+        click.echo(
+            f"  Config file: {config_path} {'(custom)' if config_path_opt else '(default)'}"
+        )
 
     # Resolve defaults
     conventions_default = resolve_path(project_dir, defaults.get("conventions_file"))
