@@ -110,7 +110,8 @@ def prepare_prompt(system_prompt: str, conventions_md: str, file_content: str) -
     content = file_content[:max_chars]
 
     system_text = (
-        system_prompt.strip() + "\n\n" + conventions_md.strip()
+        system_prompt.strip() + "\n\n" + conventions_md.strip() +
+        "\n\n**Always output ONLY the final suggested filename, nothing else**."
     )
     user_text = (
         "\n\nFile content (truncated):\n" + content.strip()
@@ -130,7 +131,7 @@ def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict
         model=model,
         messages=messages,
         temperature=0.2,
-        max_tokens=32,
+        max_tokens=100,
     )
     
     # Return both the content and full response for verbose mode
