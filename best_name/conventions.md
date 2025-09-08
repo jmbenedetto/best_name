@@ -1,0 +1,73 @@
+# Default Naming Conventions and Categories
+## Categories for Classification
+- Bank receipt: receipt for financial transactions. A bank receipt is issued by a financial institution (Itau, Nubank, etc.) and always contains the institution name, the payee name, the receiver name and value associated with it.
+- Invoice: Nota fiscal or cupom fiscal issued by a merchant to register the sale of a product or service to a client. It always have an issue date, an issuer, a client, the description of the products/services sold and the value.
+- Presentation support: usually PowerPoint or Keynotes presentations created to be used during meetings to help the speaker conveying information to meeting participants.
+- Spreadsheet: usually Excel, Numbers or Google Sheet workbooks. They store data under a table format and each cell can contain values or formulas.
+- Academic article: papers usually between 5 and 50 pages written by academic researchers and published in peer-reviewed journals. They tend to have a DOI and start with both a title and an abstract. They always have authors, title and publication date.
+- Book: long form written content published by an editor. They tend to have ISBN and usually have more than 100 pages. They always have an author and publication date.
+- Blog post: written content published online, usually in dedicated platforms as Medium.com. It is common for a blog post to have its own webpage with equivalent length to 2 pages. They usually have authors.
+- Document: any other written content which does not fit into the previous categories. They usually have authors and publication date.
+## Areas for classification
+- Area is a subset of my life, and part of a biggest container called space. See below the list of areas for each space.
+- Improvement space: areas related to physical (exercise, diet, etc), intellectual (learning) and mental (Narcotics Anonymous, meditation, therapy) self-improvement.
+    - Physical: Projects and content about my exercise routines, sport practices and diets followed.
+    - Research: Academic projects and formal learning engagements.
+    - NA: Projects and content about my drug addiction recovery. It includes personal recovery and service engagements (volunteer work to Narcotics Anonymous).
+    - Meditation: Projects and content about my meditation practice.
+- Life space: areas related to my personal life.
+    - Fun: Projects and content about holiday plans, family trips and general fun activities.
+    - MyFamily: Projects and content about my dear ones (wife Daliane, daughter Marina, dog Amélie, grandma Edmea, father Vicente, brother Max, brother Marcus, nephew Lian).
+    - MyFinance: Money related documents and projects as bank statements, investments, tax, retirement plans, etc.
+    - MyHealth: Treatments, exams requests and results, logs.
+    - MyHouseHold: Projects and content related to the management of my house. It includes employees’ (Anderson, Gracielle, Aires), small repairs.
+    - MyProperties: Projects and content about my properties. Today they are only real state - apartment at Rua Manuel da Nóbrega SP (I live there today), small office at Rua Lucídio Lago RJ, apartment at Rua Maranhão RJ (Edmea, Vicente and Marcus live there).
+    - Oficial: Oficial documents as IDs, birth certificates, diplomas, etc.
+- Work space: areas related to my professional life and how I make money.
+    - Automation: Projects and content about automations I created and/or implemented to help my day-to-day activities.
+    - Carajas: Projects and content from when I worked for Carajás. Archived.
+    - Demandtex: Projects and content from when I tried to work for Demandtex. It did not take off. Archived.
+    - Heritage: Projects and content from the succession process and my late mother properties management.
+    - Ideativa: My one-man consulting company. It includes accounting, commercial and client related projects and content. Today I use it mainly to invoice Relex.
+    - MSB: My Second Brain organization, including projects and contents on how I organize knowledge.
+    - MyAssets: Imagens, audio, video, scripts, templates and everything else I can use to create a presentation or other material.
+    - MyCareer: Projects and content related to my career as job offers, reflections on positioning, next move preparations.
+    - MyProductivity: Everything related to the workflows I create and use to improve my productivity.
+    - MyStrategy: Projects and content related to my personal strategy. It includes yearly strategic planning cycles, performance measures and tracking.
+    - Relex: My main work today. Projects and activities I perform as pre-sales for Relex Solutions, a finish supply chain planning software editor.
+    - RoverAi: My side project today. It is a consulting/technology/data company created with my partner Christian Sandke. Here goes projects and contents of our efforts to create a profitable business. Client work also goes here, as for DKT.
+## Naming conventions
+- Base naming convention to apply `YYYYMMDD_AreaName_FileName.xxx`, where:
+- **YYYYMMDD**: Represents the date the file was created or is intended for use, formatted as:
+    - **YYYY**: Four-digit year
+    - **MM**: Two-digit month (01-12)
+    - **DD**: Two-digit day (01-31)
+    - *Example*: For a file created on March 15, 2023, this component would be 20230315.
+- **AreaName**: Name of the area to which pertains the file, as identified in step 2.
+    - *Example*: Relex, MyFamily, MyProperties, MyHousehold.
+- **FileName**: A descriptive title of the file's contents, indicating what type of data or information it includes. Always include key entities in the name, as client or prospect name, bank name.
+    - *Example*: A file with population statistics for Rio de Janeiro could be named "Population Statistics Rio de Janeiro".
+- *Example*: A CSV file with statistics about Rio de Janeiro for a marketing study for the company Ideativa would be named "20230315_Ideativa_Population statistics Rio de Janeiro.csv".
+### Category specific naming conventions
+- Bank receipt: Respect the base naming convention, except for:
+    - **YYYYMMDD**: to use the emission date.
+    - **File name**: must start with "Receipt" and include the payee short name, the receiver short name and the value. Eg.: Receipt paid by Joao Miguel to Aires 1250 reais.
+- Invoice: Respect the base naming convention, except for:
+    - **YYYYMMDD**: to use the emission date.
+    - **File name**: must start with "NF" and include the issuer short name, the client short name, a 1-3 words describing the product/service and the value. Eg.: NF issued by Carrefour paid by Joao Miguel for Eletronics 6250 reais.
+- Presentation support: Respect the base naming convention, except for:
+    - **YYYYMMDD**: to use the presentation date.
+- Academic article: Respect the base naming convention, except for:
+    - **YYYYMMDD**: to use only the publication year. Eg.: If publication date = 17/1/2024, use 2024.
+    - **File name**: Authors_Article_Title. For authors, use the author last name or the 1st author last name followed by "at all". "_Article_" is a fixed term. For title use the article title, ignoring subtitles and ponctuation. Eg.: Porter_Article_What Is Strategy.
+- Book: Respect the base naming convention, except for:
+    - **YYYYMMDD**: to use only the publication year. Eg.: If publication date = 17/1/2024, use 2024.
+    - **File name**: Authors_Book_Title. For authors, use the author last name or the 1st author last name followed by "at all". "_Book_" is a fixed term. For title use the book title, ignoring subtitles and ponctuation. Eg.: Porter_Book_Competitive Advantage of Nations.
+- Blog post: Respect the base naming convention, except for:
+    - **YYYYMMDD**: to use post publication date.
+    - **File name**: AuthorsOrSite_Post_Title. For authors, use the author last name or the 1st author last name followed by "at all". Of no author name is available, use the site name where the post was made instead. "_Post_" is a fixed term. For title use the post title, ignoring subtitles and ponctuation. Eg.: Porter_Post_What Is Strategy.
+### Area specific naming conventions
+- Relex
+    - For client/prospect related files, include the client/prospect name at the beginning of the description, just after Relex_.
+- Ideativa
+    - For client/prospect related files, include the client/prospect name at the beginning of the description, just after Ideativa_.

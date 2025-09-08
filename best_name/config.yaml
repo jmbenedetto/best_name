@@ -1,0 +1,39 @@
+# Default OpenRouter settings
+openrouter:
+  api_key: ${OPENROUTER_API_KEY}  # Read from environment variable
+  model: "moonshotai/kimi-k2-0905"
+  base_url: "https://openrouter.ai/api/v1"
+
+# Default file paths
+defaults:
+  conventions_file: "conventions.md"
+  system_prompt_file: "system_prompt.md"
+
+# Supported formats and languages
+supported_formats:
+  - txt
+  - md
+  - csv
+  - json
+  - yaml
+  - yml
+  - xml
+  - html
+  - htm
+  - css
+  - jpg
+  - jpeg
+  - png
+  - gif
+  - svg
+  - ico
+  - pdf
+  - docx
+  - xlsx
+  - pptx
+
+supported_languages:
+  - English
+  - Spanish
+  - French
+  - Portuguese

@@ -255,7 +255,6 @@ def cli(
 
     if verbose:
         click.echo("=== Best Name CLI - Verbose Mode ===\n")
-        click.echo(f"Step 1: Loading configuration from {Path.cwd()}")
 
     load_dotenv()
 
@@ -263,25 +262,33 @@ def cli(
     package_dir = Path(__file__).parent
     project_dir = Path.cwd()
 
-    # Use custom config path if provided, otherwise look in package dir first, then current directory
+    # Use custom config path if provided, otherwise look in package dir first,
+    # then current directory
     if config_path_opt:
         config_path = config_path_opt
     else:
         package_config = package_dir / "config.yaml"
         project_config = project_dir / "config.yaml"
         config_path = package_config if package_config.exists() else project_config
-
     config = load_yaml_config(config_path)
 
     defaults = config.get("defaults") or {}
     openrouter_cfg = config.get("openrouter") or {}
 
     if verbose:
-        click.echo(f"Step 2: Resolving file paths")
+        click.echo(f"Step 1: Resolving file paths")
+        click.echo(f"  Package directory: {package_dir}")
         click.echo(f"  Project directory: {project_dir}")
-        click.echo(
-            f"  Config file: {config_path} {'(custom)' if config_path_opt else '(default)'}"
+        config_source = (
+            "(custom)"
+            if config_path_opt
+            else (
+                "(package)"
+                if config_path == package_dir / "config.yaml"
+                else "(project)"
+            )
         )
+        click.echo(f"  Config file: {config_path} {config_source}")
 
     # Resolve defaults - look in package dir first, then project dir
     conventions_filename = defaults.get("conventions_file") or "conventions.md"
@@ -307,8 +314,22 @@ def cli(
     system_prompt_file = system_prompt_path or system_prompt_default
 
     if verbose:
-        click.echo(f"  Conventions file: {conventions_file}")
-        click.echo(f"  System prompt file: {system_prompt_file}")
+        conventions_source = (
+            "(custom)"
+            if conventions_path
+            else "(package)" if conventions_file == package_conventions else "(project)"
+        )
+        system_prompt_source = (
+            "(custom)"
+            if system_prompt_path
+            else (
+                "(package)"
+                if system_prompt_file == package_system_prompt
+                else "(project)"
+            )
+        )
+        click.echo(f"  Conventions file: {conventions_file} {conventions_source}")
+        click.echo(f"  System prompt file: {system_prompt_file} {system_prompt_source}")
 
     conventions_md = (
         read_text_file(conventions_file)
