@@ -80,6 +80,19 @@ file_path: str  # Path to the file to be renamed
 --base-url: str       # OpenRouter base URL (default: from config.yaml)
 ```
 
+## Development Workflow
+
+### Running During Development
+```bash
+# Option 1: Run directly with uv (recommended for development)
+uv run best_name_core.py /path/to/file.pdf
+
+# Option 2: Install locally and run as CLI
+uv tool install .
+best_name /path/to/file.pdf
+
+```
+
 ## Configuration and defaults
 - default conventions and categories are stored in the conventions.md file.
 - default system prompt is stored in the system_prompt.md file.
@@ -114,13 +127,21 @@ file_path: str  # Path to the file to be renamed
 ## CLI Installation and Setup
 
 ```bash
-# Install the CLI tool globally
-uv tool install best_name
+# Install the CLI tool locally from the project directory
+cd /path/to/best_name  # Navigate to the project directory
+uv tool install .      # Install from current directory
+
+# Alternative: Install from any location by specifying the path
+uv tool install /path/to/best_name
 
 # Ensure environment variables are set (required)
 export OPENROUTER_API_KEY="your_api_key_here"
 # OR create a .env file with:
 # OPENROUTER_API_KEY=your_api_key_here
+
+# Verify installation
+which best_name        # Should show the installed CLI path
+best_name --help       # Should show help information
 ```
 
 ## Running Commands
