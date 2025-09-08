@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import shutil
 from pathlib import Path
 from typing import Optional
 import warnings
@@ -97,9 +98,17 @@ def sanitize_filename(name: str) -> str:
     if not name or not name.strip():
         return "untitled"
     
+    # Remove file extension if present (we'll preserve the original extension)
+    name_without_ext = name
+    if "." in name:
+        # Check if it looks like a file extension (last part after dot is 1-5 chars, no spaces)
+        parts = name.rsplit(".", 1)
+        if len(parts) == 2 and len(parts[1]) <= 5 and " " not in parts[1]:
+            name_without_ext = parts[0]
+    
     # Remove path separators and illegal characters for common filesystems
     illegal = "\n\r\t:/\\?*\"'<>|"
-    cleaned = "".join(ch if ch not in illegal else " " for ch in name)
+    cleaned = "".join(ch if ch not in illegal else " " for ch in name_without_ext)
     cleaned = " ".join(cleaned.split())  # collapse whitespace
     return cleaned.strip(" .")[:120] or "untitled"
 
@@ -130,8 +139,7 @@ def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict
     resp = client.chat.completions.create(
         model=model,
         messages=messages,
-        temperature=0.2,
-        max_tokens=100,
+        temperature=0.2
     )
     
     # Return both the content and full response for verbose mode
@@ -148,6 +156,8 @@ def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict
 @click.option("--api-key", "api_key_opt", type=str, default=None, help="OpenRouter API key")
 @click.option("--model", "model_opt", type=str, default=None, help="LLM model name")
 @click.option("--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL")
+@click.option("--copy", is_flag=True, default=False, help="Create a copy of the file with the suggested name")
+@click.option("--rename", is_flag=True, default=False, help="Rename the file with the suggested name")
 @click.option("--verbose", is_flag=True, default=False, help="Show detailed processing steps")
 def cli(file_path: Path,
         conventions_path: Optional[Path],
@@ -155,8 +165,18 @@ def cli(file_path: Path,
         api_key_opt: Optional[str],
         model_opt: Optional[str],
         base_url_opt: Optional[str],
+        copy: bool,
+        rename: bool,
         verbose: bool) -> None:
-    """Suggest the best filename for FILE_PATH based on its content."""
+    """Suggest the best filename for FILE_PATH based on its content.
+    
+    Use --copy to create a copy with the suggested name.
+    Use --rename to rename the original file with the suggested name.
+    """
+    
+    # Check that copy and rename are mutually exclusive
+    if copy and rename:
+        raise click.ClickException("Cannot use both --copy and --rename options together.")
 
     # Suppress logs from external libraries when not in verbose mode
     if not verbose:
@@ -231,9 +251,36 @@ def cli(file_path: Path,
     if not content or not content.strip():
         # Generic name based on extension per requirements
         ext = file_path.suffix.lstrip(".") or "file"
+        suggested = f"untitled_{ext}"
+        
         if verbose:
-            click.echo(f"  No content extracted, using generic name")
-        click.echo(f"untitled_{ext}")
+            click.echo(f"  No content extracted, using generic name: '{suggested}'")
+        
+        # Handle file operations for generic names too
+        if copy or rename:
+            original_ext = file_path.suffix
+            new_filename = suggested + original_ext
+            new_path = file_path.parent / new_filename
+            
+            if new_path.exists():
+                raise click.ClickException(f"Target file '{new_filename}' already exists.")
+            
+            try:
+                if copy:
+                    shutil.copy2(file_path, new_path)
+                    if verbose:
+                        click.echo(f"  Copied '{file_path.name}' to '{new_filename}'")
+                    click.echo(f"File copied to: {new_filename}")
+                elif rename:
+                    file_path.rename(new_path)
+                    if verbose:
+                        click.echo(f"  Renamed '{file_path.name}' to '{new_filename}'")
+                    click.echo(f"File renamed to: {new_filename}")
+            except Exception as e:
+                operation = "copy" if copy else "rename"
+                raise click.ClickException(f"Failed to {operation} file: {e}")
+        else:
+            click.echo(suggested)
         return
 
     if verbose:
@@ -296,7 +343,34 @@ def cli(file_path: Path,
         click.echo(f"  Sanitized filename: '{suggested}'")
         click.echo(f"\n=== Final Result ===")
     
-    click.echo(suggested)
+    # Handle file operations if requested
+    if copy or rename:
+        # Preserve the original file extension
+        original_ext = file_path.suffix
+        new_filename = suggested + original_ext
+        new_path = file_path.parent / new_filename
+        
+        # Check if target file already exists
+        if new_path.exists():
+            raise click.ClickException(f"Target file '{new_filename}' already exists.")
+        
+        try:
+            if copy:
+                shutil.copy2(file_path, new_path)
+                if verbose:
+                    click.echo(f"  Copied '{file_path.name}' to '{new_filename}'")
+                click.echo(f"File copied to: {new_filename}")
+            elif rename:
+                file_path.rename(new_path)
+                if verbose:
+                    click.echo(f"  Renamed '{file_path.name}' to '{new_filename}'")
+                click.echo(f"File renamed to: {new_filename}")
+        except Exception as e:
+            operation = "copy" if copy else "rename"
+            raise click.ClickException(f"Failed to {operation} file: {e}")
+    else:
+        # Just output the suggested name as before
+        click.echo(suggested)
 
 
 if __name__ == "__main__":
