@@ -37,7 +37,7 @@
     - Relex: My main work today. Projects and activities I perform as pre-sales for Relex Solutions, a finish supply chain planning software editor.
     - RoverAi: My side project today. It is a consulting/technology/data company created with my partner Christian Sandke. Here goes projects and contents of our efforts to create a profitable business. Client work also goes here, as for DKT.
 ## Naming conventions
-- Base naming convention to apply `YYYYMMDD_AreaName_FileName.xxx`, where:
+- Base naming convention to apply `YYYYMMDD_AreaName_File name.xxx`, where:
 - **YYYYMMDD**: Represents the date the file was created or is intended for use, formatted as:
     - **YYYY**: Four-digit year
     - **MM**: Two-digit month (01-12)
@@ -45,7 +45,7 @@
     - *Example*: For a file created on March 15, 2023, this component would be 20230315.
 - **AreaName**: Name of the area to which pertains the file, as identified in step 2.
     - *Example*: Relex, MyFamily, MyProperties, MyHousehold.
-- **FileName**: A descriptive title of the file's contents, indicating what type of data or information it includes. Always include key entities in the name, as client or prospect name, bank name.
+- **FileName**: A descriptive title of the file's contents, indicating what type of data or information it includes. Always include key entities in the name, as client or prospect name, bank name. Use space to separate words and apply sentence case.
     - *Example*: A file with population statistics for Rio de Janeiro could be named "Population Statistics Rio de Janeiro".
 - *Example*: A CSV file with statistics about Rio de Janeiro for a marketing study for the company Ideativa would be named "20230315_Ideativa_Population statistics Rio de Janeiro.csv".
 ### Category specific naming conventions

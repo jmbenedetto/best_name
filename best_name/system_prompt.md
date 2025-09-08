@@ -3,7 +3,7 @@
 # Task
 - Your task is to suggest a proper name for the supplied file based on its content and respecting the naming conventions defined below.
 - Step 1
-    - Classify the file into one of the categories defined in the below.
+    - Classify the file into one of the categories defined the below.
 - Step 2
     - Classify the file into one of the areas defined below.
 - Step 3
