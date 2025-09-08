@@ -12,7 +12,9 @@ import yaml
 
 try:
     from openai import OpenAI  # OpenRouter is OpenAI-compatible
-except Exception:  # pragma: no cover - allow import-time failures in environments without openai
+except (
+    Exception
+):  # pragma: no cover - allow import-time failures in environments without openai
     OpenAI = None  # type: ignore
 
 
@@ -53,7 +55,12 @@ def extract_content_with_docling(file_path: Path) -> Optional[str]:
         result = converter.convert(str(file_path))
 
         # Preferred: document provides export to markdown or plain text
-        for attr in ("export_to_markdown", "export_to_text", "export_markdown", "export_text"):
+        for attr in (
+            "export_to_markdown",
+            "export_to_text",
+            "export_markdown",
+            "export_text",
+        ):
             if hasattr(result.document, attr):
                 try:
                     exported = getattr(result.document, attr)()
@@ -82,7 +89,16 @@ def extract_content_with_docling(file_path: Path) -> Optional[str]:
 
 def extract_file_content(file_path: Path) -> Optional[str]:
     text_like_exts = {
-        "txt", "md", "csv", "json", "yaml", "yml", "xml", "html", "htm", "css",
+        "txt",
+        "md",
+        "csv",
+        "json",
+        "yaml",
+        "yml",
+        "xml",
+        "html",
+        "htm",
+        "css",
     }
 
     ext = file_path.suffix.lower().lstrip(".")
@@ -97,7 +113,7 @@ def sanitize_filename(name: str) -> str:
     # Handle empty or None input
     if not name or not name.strip():
         return "untitled"
-    
+
     # Remove file extension if present (we'll preserve the original extension)
     name_without_ext = name
     if "." in name:
@@ -105,7 +121,7 @@ def sanitize_filename(name: str) -> str:
         parts = name.rsplit(".", 1)
         if len(parts) == 2 and len(parts[1]) <= 5 and " " not in parts[1]:
             name_without_ext = parts[0]
-    
+
     # Remove path separators and illegal characters for common filesystems
     illegal = "\n\r\t:/\\?*\"'<>|"
     cleaned = "".join(ch if ch not in illegal else " " for ch in name_without_ext)
@@ -113,18 +129,20 @@ def sanitize_filename(name: str) -> str:
     return cleaned.strip(" .")[:120] or "untitled"
 
 
-def prepare_prompt(system_prompt: str, conventions_md: str, file_content: str) -> tuple[list[dict], int]:
+def prepare_prompt(
+    system_prompt: str, conventions_md: str, file_content: str
+) -> tuple[list[dict], int]:
     # Truncate content for safety
     max_chars = 12000
     content = file_content[:max_chars]
 
     system_text = (
-        system_prompt.strip() + "\n\n" + conventions_md.strip() +
-        "\n\n**Always output ONLY the final suggested filename, nothing else**."
+        system_prompt.strip()
+        + "\n\n"
+        + conventions_md.strip()
+        + "\n\n**Always output ONLY the final suggested filename, nothing else**."
     )
-    user_text = (
-        "\n\nFile content (truncated):\n" + content.strip()
-    )
+    user_text = "\n\nFile content (truncated):\n" + content.strip()
     messages = [
         {"role": "system", "content": system_text},
         {"role": "user", "content": user_text},
@@ -132,51 +150,87 @@ def prepare_prompt(system_prompt: str, conventions_md: str, file_content: str) -
     return messages, len(content)
 
 
-def call_openrouter(api_key: str, base_url: str, model: str, messages: list[dict], verbose: bool = False) -> tuple[str, dict]:
+def call_openrouter(
+    api_key: str, base_url: str, model: str, messages: list[dict], verbose: bool = False
+) -> tuple[str, dict]:
     if OpenAI is None:
         raise RuntimeError("openai package is not installed")
     client = OpenAI(base_url=base_url, api_key=api_key)
     resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.2
+        model=model, messages=messages, temperature=0.2
     )
-    
+
     # Return both the content and full response for verbose mode
-    content = resp.choices[0].message.content.strip() if resp.choices[0].message.content else ""
+    content = (
+        resp.choices[0].message.content.strip()
+        if resp.choices[0].message.content
+        else ""
+    )
     full_response = resp.model_dump() if verbose else {}
-    
+
     return content, full_response
 
 
 @click.command(name="best_name")
 @click.argument("file_path", type=click.Path(exists=True, path_type=Path))
-@click.option("--conventions", "conventions_path", type=click.Path(path_type=Path), default=None, help="Path to conventions markdown file")
-@click.option("--system-prompt", "system_prompt_path", type=click.Path(path_type=Path), default=None, help="Path to system prompt markdown file")
-@click.option("--api-key", "api_key_opt", type=str, default=None, help="OpenRouter API key")
+@click.option(
+    "--conventions",
+    "conventions_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to conventions markdown file",
+)
+@click.option(
+    "--system-prompt",
+    "system_prompt_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to system prompt markdown file",
+)
+@click.option(
+    "--api-key", "api_key_opt", type=str, default=None, help="OpenRouter API key"
+)
 @click.option("--model", "model_opt", type=str, default=None, help="LLM model name")
-@click.option("--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL")
-@click.option("--copy", is_flag=True, default=False, help="Create a copy of the file with the suggested name")
-@click.option("--rename", is_flag=True, default=False, help="Rename the file with the suggested name")
-@click.option("--verbose", is_flag=True, default=False, help="Show detailed processing steps")
-def cli(file_path: Path,
-        conventions_path: Optional[Path],
-        system_prompt_path: Optional[Path],
-        api_key_opt: Optional[str],
-        model_opt: Optional[str],
-        base_url_opt: Optional[str],
-        copy: bool,
-        rename: bool,
-        verbose: bool) -> None:
+@click.option(
+    "--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL"
+)
+@click.option(
+    "--copy",
+    is_flag=True,
+    default=False,
+    help="Create a copy of the file with the suggested name",
+)
+@click.option(
+    "--rename",
+    is_flag=True,
+    default=False,
+    help="Rename the file with the suggested name",
+)
+@click.option(
+    "--verbose", is_flag=True, default=False, help="Show detailed processing steps"
+)
+def cli(
+    file_path: Path,
+    conventions_path: Optional[Path],
+    system_prompt_path: Optional[Path],
+    api_key_opt: Optional[str],
+    model_opt: Optional[str],
+    base_url_opt: Optional[str],
+    copy: bool,
+    rename: bool,
+    verbose: bool,
+) -> None:
     """Suggest the best filename for FILE_PATH based on its content.
-    
+
     Use --copy to create a copy with the suggested name.
     Use --rename to rename the original file with the suggested name.
     """
-    
+
     # Check that copy and rename are mutually exclusive
     if copy and rename:
-        raise click.ClickException("Cannot use both --copy and --rename options together.")
+        raise click.ClickException(
+            "Cannot use both --copy and --rename options together."
+        )
 
     # Suppress logs from external libraries when not in verbose mode
     if not verbose:
@@ -201,8 +255,8 @@ def cli(file_path: Path,
     config_path = project_dir / "config.yaml"
     config = load_yaml_config(config_path)
 
-    defaults = (config.get("defaults") or {})
-    openrouter_cfg = (config.get("openrouter") or {})
+    defaults = config.get("defaults") or {}
+    openrouter_cfg = config.get("openrouter") or {}
 
     if verbose:
         click.echo(f"Step 2: Resolving file paths")
@@ -211,7 +265,9 @@ def cli(file_path: Path,
 
     # Resolve defaults
     conventions_default = resolve_path(project_dir, defaults.get("conventions_file"))
-    system_prompt_default = resolve_path(project_dir, defaults.get("system_prompt_file"))
+    system_prompt_default = resolve_path(
+        project_dir, defaults.get("system_prompt_file")
+    )
 
     conventions_file = conventions_path or conventions_default
     system_prompt_file = system_prompt_path or system_prompt_default
@@ -220,8 +276,16 @@ def cli(file_path: Path,
         click.echo(f"  Conventions file: {conventions_file}")
         click.echo(f"  System prompt file: {system_prompt_file}")
 
-    conventions_md = read_text_file(conventions_file) if (conventions_file and conventions_file.exists()) else ""
-    system_prompt = read_text_file(system_prompt_file) if (system_prompt_file and system_prompt_file.exists()) else "You are a helpful assistant that names files based on content."
+    conventions_md = (
+        read_text_file(conventions_file)
+        if (conventions_file and conventions_file.exists())
+        else ""
+    )
+    system_prompt = (
+        read_text_file(system_prompt_file)
+        if (system_prompt_file and system_prompt_file.exists())
+        else "You are a helpful assistant that names files based on content."
+    )
 
     if verbose:
         click.echo(f"\nStep 3: Loading content files")
@@ -229,19 +293,30 @@ def cli(file_path: Path,
         click.echo(f"  System prompt loaded: {len(system_prompt)} characters")
 
     # Determine OpenRouter settings (env > CLI > config)
-    api_key = os.getenv("OPENROUTER_API_KEY") or api_key_opt or openrouter_cfg.get("api_key") or ""
+    api_key = (
+        os.getenv("OPENROUTER_API_KEY")
+        or api_key_opt
+        or openrouter_cfg.get("api_key")
+        or ""
+    )
     if not api_key:
         # Let errors bubble up naturally per project constraints
-        raise RuntimeError("OPENROUTER_API_KEY is required. Set env var or pass --api-key.")
+        raise RuntimeError(
+            "OPENROUTER_API_KEY is required. Set env var or pass --api-key."
+        )
 
-    model = model_opt or openrouter_cfg.get("model") or "gpt-5-mini"
-    base_url = base_url_opt or openrouter_cfg.get("base_url") or "https://openrouter.ai/api/v1"
+    model = model_opt or openrouter_cfg.get("model") or "gpt-4o-mini"
+    base_url = (
+        base_url_opt or openrouter_cfg.get("base_url") or "https://openrouter.ai/api/v1"
+    )
 
     if verbose:
         click.echo(f"\nStep 4: OpenRouter configuration")
         click.echo(f"  Model: {model}")
         click.echo(f"  Base URL: {base_url}")
-        click.echo(f"  API Key: {'*' * (len(api_key) - 4) + api_key[-4:] if len(api_key) > 4 else '***'}")
+        click.echo(
+            f"  API Key: {'*' * (len(api_key) - 4) + api_key[-4:] if len(api_key) > 4 else '***'}"
+        )
 
     # Extract content
     if verbose:
@@ -252,19 +327,21 @@ def cli(file_path: Path,
         # Generic name based on extension per requirements
         ext = file_path.suffix.lstrip(".") or "file"
         suggested = f"untitled_{ext}"
-        
+
         if verbose:
             click.echo(f"  No content extracted, using generic name: '{suggested}'")
-        
+
         # Handle file operations for generic names too
         if copy or rename:
             original_ext = file_path.suffix
             new_filename = suggested + original_ext
             new_path = file_path.parent / new_filename
-            
+
             if new_path.exists():
-                raise click.ClickException(f"Target file '{new_filename}' already exists.")
-            
+                raise click.ClickException(
+                    f"Target file '{new_filename}' already exists."
+                )
+
             try:
                 if copy:
                     shutil.copy2(file_path, new_path)
@@ -297,13 +374,21 @@ def cli(file_path: Path,
         click.echo(messages[1]["content"])
         click.echo(f"\n--- Combined Message (sent to LLM) ---")
         for i, msg in enumerate(messages):
-            click.echo(f"Message {i+1} ({msg['role']}): {len(msg['content'])} characters")
+            click.echo(
+                f"Message {i+1} ({msg['role']}): {len(msg['content'])} characters"
+            )
 
     if verbose:
         click.echo(f"\nStep 7: Calling OpenRouter API")
 
-    raw_name, full_response = call_openrouter(api_key=api_key, base_url=base_url, model=model, messages=messages, verbose=verbose)
-    
+    raw_name, full_response = call_openrouter(
+        api_key=api_key,
+        base_url=base_url,
+        model=model,
+        messages=messages,
+        verbose=verbose,
+    )
+
     if verbose:
         click.echo(f"\n--- Complete LLM Exchange ---")
         if full_response:
@@ -312,48 +397,50 @@ def cli(file_path: Path,
                 "model": model,
                 "messages": messages,
                 "temperature": 0.2,
-                "max_tokens": 32
+                "max_tokens": 32,
             }
             click.echo(json.dumps(request_info, indent=2, ensure_ascii=False))
-            
+
             click.echo(f"\nFull LLM Response:")
             click.echo(json.dumps(full_response, indent=2, ensure_ascii=False))
-            
+
             # Extract and display reasoning if available
             if full_response.get("choices") and len(full_response["choices"]) > 0:
                 choice = full_response["choices"][0]
                 if choice.get("message", {}).get("content"):
                     click.echo(f"\nLLM Reasoning/Content:")
                     click.echo(f"'{choice['message']['content']}'")
-                
+
                 # Show usage statistics if available
                 if full_response.get("usage"):
                     usage = full_response["usage"]
                     click.echo(f"\nToken Usage:")
                     click.echo(f"  Prompt tokens: {usage.get('prompt_tokens', 'N/A')}")
-                    click.echo(f"  Completion tokens: {usage.get('completion_tokens', 'N/A')}")
+                    click.echo(
+                        f"  Completion tokens: {usage.get('completion_tokens', 'N/A')}"
+                    )
                     click.echo(f"  Total tokens: {usage.get('total_tokens', 'N/A')}")
-        
+
         click.echo(f"\n--- Processing Result ---")
         click.echo(f"  Raw response: '{raw_name}'")
 
     suggested = sanitize_filename(raw_name)
-    
+
     if verbose:
         click.echo(f"  Sanitized filename: '{suggested}'")
         click.echo(f"\n=== Final Result ===")
-    
+
     # Handle file operations if requested
     if copy or rename:
         # Preserve the original file extension
         original_ext = file_path.suffix
         new_filename = suggested + original_ext
         new_path = file_path.parent / new_filename
-        
+
         # Check if target file already exists
         if new_path.exists():
             raise click.ClickException(f"Target file '{new_filename}' already exists.")
-        
+
         try:
             if copy:
                 shutil.copy2(file_path, new_path)
@@ -375,5 +462,3 @@ def cli(file_path: Path,
 
 if __name__ == "__main__":
     cli()
-
-
