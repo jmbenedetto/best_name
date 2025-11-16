@@ -55,7 +55,7 @@
 - Naiming conventions to apply to files depending on their category.
 - Receipt: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the payment date.
-	- **File name**: to use `Receipt [Issuer name] [Payee shortened name] paid [value] to [Receiver shortened name]`. Eg.: Receipt Itaú Joao Miguel paid 1250 BRL to Aires.
+	- **File name**: to use `Receipt [Issuer name] [Payee shortened name] paid [value] to [Receiver shortened name]`. Value must ignore decimals and use 3 letters to identify currency. Eg.: Receipt Itaú Joao Miguel paid 1250BRL to Aires.
 - Invoice: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the due date.
 	- **File name**: to use `Invoice  [Issuer short name] to [Client shortened name] about [Produt/service summary]`. Produt/service summary must be a 1-3 words describing the product/service in the invoice. Eg.: Invoice from Carrefour to Joao Miguel about Groceries.
@@ -76,9 +76,9 @@
 - Book: `YYYY_[Authors]_Book_[Book Title].xxx`:
 	- **YYYYMMDD**: to use only the publication year. Eg.: If publication date = 17/1/2024, use 2024.
 	- **Authors**: if single author, use the `[author last name]`. If 2 authors, use `[1st author last name]_and_[2nd author last name]`. If more than 2 authors, use `[1st author last name]_at_al.`.
-- Blog post: Respect the base naming convention, except for:
+- Blog post: `YYYY_[Authors]_Post_[Post Title].xxx`
 	- **YYYYMMDD**: to use post publication date.
-	- **File name**: Authors Or Site_Post_Title of the post. For authors, use the author last name or the 1st author last name followed by "at all". If no author name is available, use the site name where the post was made instead. "*Post*" is a fixed term. For title use the post title, ignoring subtitles and ponctuation. Eg.: Porter_Post_What Is Strategy.
+	- **File name**: Authors Or Site_Post_Title of the post. if single author, use the `[author last name]`. If 2 authors, use `[1st author last name]_and_[2nd author last name]`. If more than 2 authors, use `[1st author last name]_at_al.`. If no author name is available, use the site name where the post was made instead. Eg.: 19961102_Porter_Post_What Is Strategy.
 ### File area specific naming conventions
 - Naiming conventions to apply to files depending on their area.
 - Relex
