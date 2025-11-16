@@ -16,6 +16,8 @@
 		  - Research: Academic projects and formal learning engagements.
 		  - NA: Projects and content about my drug addiction recovery. It includes personal recovery and service engagements (volunteer work to Narcotics Anonymous).
 		  - Meditation: Projects and content about my meditation practice.
+		  - SC: Projects and content about supply chain Management learning and practices.
+		  - Data: Projects and content about data analysis, data science, machine learning and AI learning and practices.
 		- Life space: areas related to my personal life.
 		  - Fun: Projects and content about holiday plans, family trips and general fun activities.
 		  - MyFamily: Projects and content about my dear ones (wife Daliane, daughter Marina, dog Amélie, grandma Edmea, father Vicente, brother Max, brother Marcus, nephew Lian).
@@ -48,21 +50,21 @@
 		- *Example*: Relex, MyFamily, MyProperties, MyHousehold.
 	- **File name**: A descriptive title of the file's contents, indicating what type of data or information it includes. Always include key entities in the name, as client or prospect name, bank name.
 		- *Example*: A file with population statistics for Rio de Janeiro could be named "Population Statistics Rio de Janeiro".
-	- *Example*: A CSV file with statistics about Rio de Janeiro for a marketing study for the company Ideativa would be named "20230315_Ideativa_Population statistics Rio de Janeiro.csv".
+		- *Example*: A CSV file with statistics about Rio de Janeiro for a marketing study for the company Ideativa would be named "20230315_Ideativa_Population statistics Rio de Janeiro.csv".
 ### File category specific naming conventions
 - Naiming conventions to apply to files depending on their category.
-- Bank receipt: Respect the base naming convention, except for:
+- Receipt: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the payment date.
-	- **File name**: to use `Receipt [Bank name] [Payee shortened name] paid [value] to [Receiver shortened name]`. Eg.: Receipt Itaú Joao Miguel paid 1250 BRL to Aires.
+	- **File name**: to use `Receipt [Issuer name] [Payee shortened name] paid [value] to [Receiver shortened name]`. Eg.: Receipt Itaú Joao Miguel paid 1250 BRL to Aires.
 - Invoice: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the due date.
-	- **File name**: to use `Invoice from [Issuer short name] to [Client shortened name] about [Produt/service summary]`. Produt/service summary must be a 1-3 words describing the product/service in the invoice. Eg.: Invoice from Carrefour to Joao Miguel about Groceries.
+	- **File name**: to use `Invoice  [Issuer short name] to [Client shortened name] about [Produt/service summary]`. Produt/service summary must be a 1-3 words describing the product/service in the invoice. Eg.: Invoice from Carrefour to Joao Miguel about Groceries.
 - Bill: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the due date.
 	- **File name**: to use `Bill from [Issuer short name] to [Client shortened name] about [Produt/service summary]`. Produt/service summary must be a 1-5 words describing the service originating the bill. Eg.: Bill from Enel to Joao Miguel about Electricity consumption at Manoel da Nóbrega.
 - Tax: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the due date.
-	- **File name**: to use `Tax from [Issuer short name] to [Client shortened name] about [Tax summary]`. Tax summary must be a 1-5 words describing the service originating the bill. Eg.: Tax from Receita Federal to Ideativa about Simples Nacional and Employee taxes.
+	- **File name**: to use `Tax [Client shortened name] [Tax summary] `. Tax summary must be a 1-5 words describing the service originating the bill. Eg.: Tax from Receita Federal to Ideativa about Simples Nacional and Employee taxes.
 - Presentation support: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the presentation date.
 - Academic article: `YYYY_Authors_Article_Article Title`:
@@ -71,9 +73,9 @@
 	- **Article**: "Article" is a fixed term.
 	- **Article Title**: For title use the article title, ignoring subtitles and ponctuation.
 	- Eg.: 1989_Porter_Article_What Is Strategy.
-- Book: Respect the base naming convention, except for:
+- Book: `YYYY_[Authors]_Book_[Book Title].xxx`:
 	- **YYYYMMDD**: to use only the publication year. Eg.: If publication date = 17/1/2024, use 2024.
-	- **File name**: Authors_Book_Title of the book. For authors, use the author last name or the 1st author last name followed by "at all". "*Book*" is a fixed term. For title use the book title, ignoring subtitles and ponctuation. Eg.: Porter_Book_Competitive Advantage of Nations.
+	- **Authors**: if single author, use the `[author last name]`. If 2 authors, use `[1st author last name]_and_[2nd author last name]`. If more than 2 authors, use `[1st author last name]_at_al.`.
 - Blog post: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use post publication date.
 	- **File name**: Authors Or Site_Post_Title of the post. For authors, use the author last name or the 1st author last name followed by "at all". If no author name is available, use the site name where the post was made instead. "*Post*" is a fixed term. For title use the post title, ignoring subtitles and ponctuation. Eg.: Porter_Post_What Is Strategy.
