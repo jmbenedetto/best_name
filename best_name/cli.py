@@ -10,12 +10,117 @@ import click
 from dotenv import load_dotenv
 import yaml
 
+# DSPy imports
 try:
-    from openai import OpenAI  # OpenRouter is OpenAI-compatible
-except (
-    Exception
-):  # pragma: no cover - allow import-time failures in environments without openai
-    OpenAI = None  # type: ignore
+    import dspy
+    from dspy import InputField, OutputField, Predict, configure
+    DSPY_AVAILABLE = True
+except ImportError:
+    DSPY_AVAILABLE = False
+    # Create placeholder classes for graceful degradation
+    class dspy:
+        class Signature:
+            pass
+        class InputField:
+            def __init__(self, desc="", **kwargs):
+                self.desc = desc
+        class OutputField:
+            def __init__(self, desc="", **kwargs):
+                self.desc = desc
+        class Predict:
+            def __init__(self, signature):
+                self.signature = signature
+        def configure(**kwargs):
+            pass
+
+
+# FilenameSignature class for DSPy prediction
+class FilenameSignature(dspy.Signature):
+    """Generate appropriate filename based on file content and naming conventions."""
+
+    file_content = InputField(desc="The extracted content from the file")
+    naming_conventions = InputField(desc="The naming conventions and categories to follow")
+    suggested_name = OutputField(desc="The suggested filename without extension")
+
+
+def initialize_dspy_lm(api_key: str, model: str, base_url: str):
+    """Initialize DSPy LM with OpenRouter configuration."""
+    if not DSPY_AVAILABLE:
+        raise RuntimeError("DSPy package is not installed")
+
+    # OpenRouter models need to be prefixed with "openrouter/" for DSPy/LiteLLM
+    if not model.startswith("openrouter/"):
+        openrouter_model = f"openrouter/{model}"
+    else:
+        openrouter_model = model
+
+    # Create LM instance with OpenRouter settings
+    lm = dspy.LM(
+        model=openrouter_model,
+        api_key=api_key,
+        api_base=base_url,
+        temperature=0.2
+    )
+
+    # Configure DSPy to use this LM
+    configure(lm=lm)
+    return lm
+
+
+def call_dspy_prediction(
+    file_content: str,
+    naming_conventions: str,
+    model: str,
+    api_key: str,
+    base_url: str,
+    verbose: bool = False
+) -> tuple[str, Optional[float]]:
+    """Call DSPy prediction for filename generation."""
+    if not DSPY_AVAILABLE:
+        raise RuntimeError("DSPy package is not installed")
+
+    # Initialize LM
+    lm = initialize_dspy_lm(api_key, model, base_url)
+
+    # Create predictor
+    predictor = Predict(FilenameSignature)
+
+    # Truncate content for safety
+    max_chars = 12000
+    truncated_content = file_content[:max_chars]
+
+    # Make prediction
+    if verbose:
+        print(f"Making DSPy prediction with {len(truncated_content)} characters of content...")
+
+    result = predictor(
+        file_content=truncated_content,
+        naming_conventions=naming_conventions
+    )
+
+    # Extract suggested name
+    suggested_name = getattr(result, 'suggested_name', '').strip()
+
+    # Extract confidence score if available (DSPy may provide this in future versions)
+    confidence = None
+    if hasattr(result, 'confidence') and result.confidence is not None:
+        try:
+            confidence = float(result.confidence)
+        except (ValueError, TypeError):
+            confidence = None
+    elif hasattr(result, 'completions') and result.completions and hasattr(result.completions, '__getitem__'):
+        try:
+            # Try to extract confidence from completions if available
+            first_completion = result.completions[0]
+            if hasattr(first_completion, 'confidence') and first_completion.confidence is not None:
+                try:
+                    confidence = float(first_completion.confidence)
+                except (ValueError, TypeError):
+                    confidence = None
+        except (IndexError, TypeError):
+            confidence = None
+
+    return suggested_name, confidence
 
 
 def read_text_file(file_path: Path) -> str:
@@ -126,49 +231,11 @@ def sanitize_filename(name: str) -> str:
     illegal = "\n\r\t:/\\?*\"'<>|"
     cleaned = "".join(ch if ch not in illegal else " " for ch in name_without_ext)
     cleaned = " ".join(cleaned.split())  # collapse whitespace
+
+    # Convert to lowercase for consistency
+    cleaned = cleaned.lower()
+
     return cleaned.strip(" .")[:120] or "untitled"
-
-
-def prepare_prompt(
-    system_prompt: str, conventions_md: str, file_content: str
-) -> tuple[list[dict], int]:
-    # Truncate content for safety
-    max_chars = 12000
-    content = file_content[:max_chars]
-
-    system_text = (
-        system_prompt.strip()
-        + "\n\n"
-        + conventions_md.strip()
-        + "\n\n**Always output ONLY the final suggested filename, nothing else**."
-    )
-    user_text = "\n\nFile content (truncated):\n" + content.strip()
-    messages = [
-        {"role": "system", "content": system_text},
-        {"role": "user", "content": user_text},
-    ]
-    return messages, len(content)
-
-
-def call_openrouter(
-    api_key: str, base_url: str, model: str, messages: list[dict], verbose: bool = False
-) -> tuple[str, dict]:
-    if OpenAI is None:
-        raise RuntimeError("openai package is not installed")
-    client = OpenAI(base_url=base_url, api_key=api_key)
-    resp = client.chat.completions.create(
-        model=model, messages=messages, temperature=0.2
-    )
-
-    # Return both the content and full response for verbose mode
-    content = (
-        resp.choices[0].message.content.strip()
-        if resp.choices[0].message.content
-        else ""
-    )
-    full_response = resp.model_dump() if verbose else {}
-
-    return content, full_response
 
 
 @click.command(name="best_name")
@@ -254,7 +321,7 @@ def cli(
         warnings.filterwarnings("ignore")
 
     if verbose:
-        click.echo("=== Best Name CLI - Verbose Mode ===\n")
+        click.echo("=== Best Name CLI - DSPy Enhanced ===\n")
 
     load_dotenv()
 
@@ -343,7 +410,7 @@ def cli(
     )
 
     if verbose:
-        click.echo(f"\nStep 3: Loading content files")
+        click.echo(f"\nStep 2: Loading content files")
         click.echo(f"  Conventions loaded: {len(conventions_md)} characters")
         click.echo(f"  System prompt loaded: {len(system_prompt)} characters")
 
@@ -360,13 +427,13 @@ def cli(
             "OPENROUTER_API_KEY is required. Set env var or pass --api-key."
         )
 
-    model = model_opt or openrouter_cfg.get("model") or "gpt-4o-mini"
+    model = model_opt or openrouter_cfg.get("model") or "x-ai/grok-4-fast"
     base_url = (
         base_url_opt or openrouter_cfg.get("base_url") or "https://openrouter.ai/api/v1"
     )
 
     if verbose:
-        click.echo(f"\nStep 4: OpenRouter configuration")
+        click.echo(f"\nStep 3: OpenRouter configuration")
         click.echo(f"  Model: {model}")
         click.echo(f"  Base URL: {base_url}")
         click.echo(
@@ -375,7 +442,7 @@ def cli(
 
     # Extract content
     if verbose:
-        click.echo(f"\nStep 5: Extracting content from {file_path}")
+        click.echo(f"\nStep 4: Extracting content from {file_path}")
 
     content = extract_file_content(file_path)
     if not content or not content.strip():
@@ -418,66 +485,39 @@ def cli(
     if verbose:
         click.echo(f"  Content extracted: {len(content)} characters")
 
-    messages, content_len = prepare_prompt(system_prompt, conventions_md, content)
+    # Use DSPy for filename prediction
+    if verbose:
+        click.echo(f"\nStep 5: Using DSPy for filename prediction")
+        click.echo(f"  Content truncated to: {min(len(content), 12000)} characters")
+        click.echo(f"  Using conventions: {len(conventions_md)} characters")
 
     if verbose:
-        click.echo(f"\nStep 6: Preparing LLM prompt")
-        click.echo(f"  Content truncated to: {content_len} characters")
-        click.echo(f"\n--- System Message ---")
-        click.echo(messages[0]["content"])
-        click.echo(f"\n--- User Message ---")
-        click.echo(messages[1]["content"])
-        click.echo(f"\n--- Combined Message (sent to LLM) ---")
-        for i, msg in enumerate(messages):
-            click.echo(
-                f"Message {i+1} ({msg['role']}): {len(msg['content'])} characters"
-            )
+        click.echo(f"\nStep 6: Calling DSPy prediction")
 
-    if verbose:
-        click.echo(f"\nStep 7: Calling OpenRouter API")
+    try:
+        raw_name, confidence = call_dspy_prediction(
+            file_content=content,
+            naming_conventions=conventions_md,
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
+            verbose=verbose
+        )
 
-    raw_name, full_response = call_openrouter(
-        api_key=api_key,
-        base_url=base_url,
-        model=model,
-        messages=messages,
-        verbose=verbose,
-    )
+        if verbose:
+            click.echo(f"\n--- DSPy Prediction Result ---")
+            click.echo(f"  Raw response: '{raw_name}'")
+            if confidence is not None:
+                click.echo(f"  Confidence score: {confidence}")
+            else:
+                click.echo(f"  Confidence score: Not available")
 
-    if verbose:
-        click.echo(f"\n--- Complete LLM Exchange ---")
-        if full_response:
-            click.echo(f"Request sent to LLM:")
-            request_info = {
-                "model": model,
-                "messages": messages,
-                "temperature": 0.2,
-                "max_tokens": 32,
-            }
-            click.echo(json.dumps(request_info, indent=2, ensure_ascii=False))
-
-            click.echo(f"\nFull LLM Response:")
-            click.echo(json.dumps(full_response, indent=2, ensure_ascii=False))
-
-            # Extract and display reasoning if available
-            if full_response.get("choices") and len(full_response["choices"]) > 0:
-                choice = full_response["choices"][0]
-                if choice.get("message", {}).get("content"):
-                    click.echo(f"\nLLM Reasoning/Content:")
-                    click.echo(f"'{choice['message']['content']}'")
-
-                # Show usage statistics if available
-                if full_response.get("usage"):
-                    usage = full_response["usage"]
-                    click.echo(f"\nToken Usage:")
-                    click.echo(f"  Prompt tokens: {usage.get('prompt_tokens', 'N/A')}")
-                    click.echo(
-                        f"  Completion tokens: {usage.get('completion_tokens', 'N/A')}"
-                    )
-                    click.echo(f"  Total tokens: {usage.get('total_tokens', 'N/A')}")
-
-        click.echo(f"\n--- Processing Result ---")
-        click.echo(f"  Raw response: '{raw_name}'")
+    except Exception as e:
+        if verbose:
+            click.echo(f"\n--- DSPy Prediction Error ---")
+            click.echo(f"  Error: {e}")
+        # Let errors bubble up naturally per project constraints
+        raise
 
     suggested = sanitize_filename(raw_name)
 

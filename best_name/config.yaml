@@ -1,7 +1,7 @@
-# Default OpenRouter settings
+# Default OpenRouter settings for DSPy LM
 openrouter:
   api_key: ${OPENROUTER_API_KEY}  # Read from environment variable
-  model: "moonshotai/kimi-k2-0905"
+  model: "x-ai/grok-4-fast"
   base_url: "https://openrouter.ai/api/v1"
 
 # Default file paths
