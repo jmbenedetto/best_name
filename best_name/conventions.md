@@ -1,6 +1,8 @@
 	- ### Categories for Classification
 		- Bank receipt: receipt for financial transactions. A bank receipt is issued by a financial institution (Itau, Nubank, etc.) and always contains the institution name, the payee name, the receiver name and value associated with it.
 		- Invoice: Nota fiscal or cupom fiscal issued by a merchant to register the sale of a product or service to a client. It always have an issue date, an issuer, a client, the description of the products/services sold and the value.
+		- Bill: Bill issued by a service provider to register the monthly cost of the service. Examples would be electricity and water bills. It always have a due date, an issuer, a client, the description of the service contract and the value.
+		- Tax: Collection document issued by a government agency to collect tax payments. Examples would be DARF (federal taxes), DAM (municipality taxes) and DAE (work related taxes). It always has a due date, an issuer, a client, the description of the taxes and the total value.
 		- Presentation support: usually PowerPoint or Keynotes presentations created to be used during meetings to help the speaker conveying information to meeting participants.
 		- Spreadsheet: usually Excel, Numbers or Google Sheet workbooks. They store data under a table format and each cell can contain values or formulas.
 		- Academic article: papers usually between 5 and 50 pages written by academic researchers and published in peer-reviewed journals. They tend to have a DOI and start with both a title and an abstract. They always have authors, title and publication date.
@@ -36,7 +38,7 @@
 		  - Relex: My main work today. Projects and activities I perform as pre-sales for Relex Solutions, a finish supply chain planning software editor.
 		  - RoverAi: My side project today. It is a consulting/technology/data company created with my partner Christian Sandke. Here goes projects and contents of our efforts to create a profitable business. Client work also goes here, as for DKT.
 ### Base naming convention
-- Base naming convention to apply `YYYYMMDD_Area Name_File name.xxx`, where:
+- Base naming convention to apply `YYYYMMDD_[Area Name]_[File name].xxx`, where:
 	- **YYYYMMDD**: Represents the date the file was created or is intended for use, formatted as:
 		- **YYYY**: Four-digit year
 		- **MM**: Two-digit month (01-12)
@@ -50,11 +52,17 @@
 ### File category specific naming conventions
 - Naiming conventions to apply to files depending on their category.
 - Bank receipt: Respect the base naming convention, except for:
-	- **YYYYMMDD**: to use the emission date.
-	- **File name**: must start with "Receipt" and include the payee short name, the receiver short name and the value. Eg.: Receipt paid by Joao Miguel to Aires 1250 reais.
+	- **YYYYMMDD**: to use the payment date.
+	- **File name**: to use `Receipt [Bank name] [Payee shortened name] paid [value] to [Receiver shortened name]`. Eg.: Receipt Itaú Joao Miguel paid 1250 BRL to Aires.
 - Invoice: Respect the base naming convention, except for:
-	- **YYYYMMDD**: to use the emission date.
-	- **File name**: must start with "NF" and include the issuer short name, the client short name, a 1-3 words describing the product/service and the value. Eg.: NF issued by Carrefour paid by Joao Miguel for Eletronics 6250 reais.
+	- **YYYYMMDD**: to use the due date.
+	- **File name**: to use `Invoice from [Issuer short name] to [Client shortened name] about [Produt/service summary]`. Produt/service summary must be a 1-3 words describing the product/service in the invoice. Eg.: Invoice from Carrefour to Joao Miguel about Groceries.
+- Bill: Respect the base naming convention, except for:
+	- **YYYYMMDD**: to use the due date.
+	- **File name**: to use `Bill from [Issuer short name] to [Client shortened name] about [Produt/service summary]`. Produt/service summary must be a 1-5 words describing the service originating the bill. Eg.: Bill from Enel to Joao Miguel about Electricity consumption at Manoel da Nóbrega.
+- Tax: Respect the base naming convention, except for:
+	- **YYYYMMDD**: to use the due date.
+	- **File name**: to use `Tax from [Issuer short name] to [Client shortened name] about [Tax summary]`. Tax summary must be a 1-5 words describing the service originating the bill. Eg.: Tax from Receita Federal to Ideativa about Simples Nacional and Employee taxes.
 - Presentation support: Respect the base naming convention, except for:
 	- **YYYYMMDD**: to use the presentation date.
 - Academic article: `YYYY_Authors_Article_Article Title`:
