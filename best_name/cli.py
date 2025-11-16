@@ -232,9 +232,6 @@ def sanitize_filename(name: str) -> str:
     cleaned = "".join(ch if ch not in illegal else " " for ch in name_without_ext)
     cleaned = " ".join(cleaned.split())  # collapse whitespace
 
-    # Convert to lowercase for consistency
-    cleaned = cleaned.lower()
-
     return cleaned.strip(" .")[:120] or "untitled"
 
 
