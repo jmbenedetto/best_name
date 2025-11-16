@@ -4,7 +4,7 @@
 
 1. [x] **DSPy Signature Integration for Filename Prediction** — Implement the primary `FileNameAnalysisSignature` to replace direct OpenAI API calls.`M`
 
-2. [ ] ** ** — Create comprehensive evaluation system using all files in tests/test_files folder. Allow for performance tracking through time. `M`
+2. [ ] **DSPy evaluation** — Create comprehensive evaluation system using all files in evals/eval_files folder. Allow for performance tracking through time. `M`
 
 ## Core Infrastructure & Scaling
 
