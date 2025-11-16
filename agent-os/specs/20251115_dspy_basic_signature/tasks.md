@@ -127,7 +127,7 @@ Total Tasks: 14 (7 core implementation tasks + 7 testing/validation tasks)
     - Review the 2-8 tests written by frontend-engineer (Task 3.1)
     - Total existing tests: approximately 6-24 tests
   - [x] 4.2 Test with existing test file structure
-    - Run integration tests with files in test/ directory
+    - Run integration tests with files in tests/test_files/ directory
     - Verify support for all existing file types (PDF, images, documents, text)
     - Test both simple and complex file formats using Docling extraction
   - [x] 4.3 Validate configuration system end-to-end
@@ -139,7 +139,7 @@ Total Tasks: 14 (7 core implementation tasks + 7 testing/validation tasks)
     - Test image file handling and filename generation
     - Test document formats (DOCX, XLSX, PPTX) processing
     - Test text formats (TXT, MD, CSV, JSON, YAML, HTML, CSS) handling
-  - [x] 4.5 Execute run_tests.sh script validation
+  - [x] 4.5 Execute tests/run_tests.sh script validation
     - Use existing test script format for validation
     - Maintain same CSV result format for comparing performance
     - Verify rate limiting and API error handling work correctly
@@ -403,10 +403,10 @@ All comprehensive CLI functionality tests passed!
 
 **Implemented:**
 - ✅ Reviewed all tests from Task Groups 1-3 (7 + 7 + 8 = 22 existing tests)
-- ✅ Tested with existing test file structure in test/ directory
+- ✅ Tested with existing test file structure in tests/test_files/ directory
 - ✅ Validated configuration system end-to-end with hierarchy testing
 - ✅ Ran comprehensive file format validation for all supported types
-- ✅ Executed run_tests.sh script validation with CSV format verification
+- ✅ Executed tests/run_tests.sh script validation with CSV format verification
 - ✅ Wrote 10 additional strategic integration tests (maximum allowed)
 - ✅ Ran complete feature validation with all DSPy integration tests
 
@@ -414,7 +414,7 @@ All comprehensive CLI functionality tests passed!
 - `/home/jmb/code/best_name/test_integration_end_to_end.py` - Strategic integration tests (10 tests)
 - `/home/jmb/code/best_name/test_integration_files.py` - File structure validation
 - `/home/jmb/code/best_name/test_configuration_integration.py` - Configuration system validation
-- `/home/jmb/code/best_name/test_run_script_validation.py` - run_tests.sh script validation
+- `/home/jmb/code/best_name/tests/test_run_script_validation.py` - tests/run_tests.sh script validation
 
 **Integration Testing Results:**
 ```
@@ -442,7 +442,7 @@ Task 4.4 - File Format Validation:
 ✓ Document formats (DOCX, XLSX, PPTX)
 ✓ Text formats (TXT, MD, CSV, JSON, YAML, HTML, CSS)
 
-Task 4.5 - run_tests.sh Script Validation:
+Task 4.5 - tests/run_tests.sh Script Validation:
 ✓ Script structure validation
 ✓ CSV output format verification
 ✓ Rate limiting simulation (1-second delays)

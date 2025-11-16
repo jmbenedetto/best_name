@@ -66,8 +66,8 @@ No visual assets provided - this is a backend/CLI enhancement with no UI changes
 - Keep environment variable handling for API keys
 
 **Testing and validation**
-- Leverage existing test file structure in test/ directory
-- Use current run_tests.sh script format for validation
+- Leverage existing test file structure in tests/test_files/ directory
+- Use current tests/run_tests.sh script format for validation
 - Maintain same CSV result format for comparing performance
 
 ## Out of Scope

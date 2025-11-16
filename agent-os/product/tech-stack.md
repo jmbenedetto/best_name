@@ -26,8 +26,8 @@
 
 ### Testing Framework
 - **Test Runner:** pytest (Python testing framework)
-- **Test Data:** Sample files covering supported formats (test/ directory)
-- **Rate Limiting:** Built-in delays for API testing (run_tests.sh script)
+- **Test Data:** Sample files covering supported formats (tests/test_files/ directory)
+- **Rate Limiting:** Built-in delays for API testing (tests/run_tests.sh script)
 - **Error Handling:** Graceful API error handling in test scenarios
 
 ## CLI Architecture

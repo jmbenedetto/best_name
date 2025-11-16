@@ -14,8 +14,11 @@ best_name/
 │   ├── config.yaml         # Default OpenRouter settings and file paths
 │   ├── conventions.md      # User-specific naming conventions and document categories
 │   └── system_prompt.md    # LLM system prompt for name generation
-├── test/                   # Test files (13 files of various formats)
-├── run_tests.sh            # Automated test script with rate limiting
+├── tests/                  # Test directory with all test scripts and files
+│   ├── test_files/         # Test data files (PDFs, images, documents)
+│   ├── run_tests.sh        # Automated test script with rate limiting
+│   ├── test_*.py           # Unit and integration test scripts
+│   └── ...                 # Other test utilities
 ├── test_results.md         # CSV format test results
 ├── pyproject.toml          # Project dependencies managed by uv
 ├── AGENTS.md               # This file - AI agent instructions
@@ -236,7 +239,7 @@ best_name /path/to/file.pdf
 ### Advanced Usage
 ```bash
 # Test with custom conventions
-best_name test/image.jpg --conventions my_rules.md
+best_name tests/test_files/image.jpg --conventions my_rules.md
 
 # Test with different models
 best_name file.pdf --model claude-3-5-sonnet
@@ -255,11 +258,11 @@ best_name file.pdf \
 Use the provided test script to run comprehensive tests:
 
 ```bash
-# Run all tests (requires test/ directory with test files)
-./run_tests.sh
+# Run all tests (requires tests/test_files/ directory with test files)
+tests/run_tests.sh
 
 # This will:
-# - Test all files in the test/ directory
+# - Test all files in the tests/test_files/ directory
 # - Generate a CSV report (test_results.md) with timestamps
 # - Include rate limiting (1 second delay between API calls)
 # - Handle API errors gracefully
@@ -285,10 +288,10 @@ cat test_results.md
 ### Manual Testing Examples
 ```bash
 # Test with different file types
-best_name test/spreadsheet.xlsx
-best_name test/presentation.pptx
-best_name test/text_document.txt
-best_name test/image.png
+best_name tests/test_files/spreadsheet.xlsx
+best_name tests/test_files/presentation.pptx
+best_name tests/test_files/text_document.txt
+best_name tests/test_files/image.png
 
 # Test error handling
 best_name non_existent_file.pdf  # Should handle gracefully
@@ -296,13 +299,14 @@ best_name non_existent_file.pdf  # Should handle gracefully
 
 ### Test Directory Structure
 ```bash
-test/
-├── document.pdf
-├── image.jpg
-├── spreadsheet.xlsx
-├── presentation.pptx
-├── text_file.txt
-└── # Add more test files as needed
+tests/
+└── test_files/
+    ├── document.pdf
+    ├── image.jpg
+    ├── spreadsheet.xlsx
+    ├── presentation.pptx
+    ├── text_file.txt
+    └── # Add more test files as needed
 ```
 
 ## Key Dependencies

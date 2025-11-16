@@ -137,7 +137,7 @@ def test_resolve_path_function():
     """Test the resolve_path function behavior."""
     from best_name.cli import resolve_path
 
-    base_dir = Path("/test/base")
+    base_dir = Path("/tests/base")
 
     # Test absolute path
     abs_path = Path("/absolute/path/file.txt")

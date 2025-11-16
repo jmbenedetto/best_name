@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Test script for best_name CLI tool
-# Tests each file in test/ directory with default configuration only
+# Tests each file in tests/ directory with default configuration only
 
 # Output file
 OUTPUT_FILE="test_results.md"
@@ -11,11 +11,11 @@ echo "timestamp,original_filename,suggested_name" > "$OUTPUT_FILE"
 
 echo "Starting best_name testing..."
 echo "Results will be saved to: $OUTPUT_FILE"
-echo "Testing $(ls test/ | wc -l) files with default configuration"
+echo "Testing $(ls tests/test_files/ | wc -l) files with default configuration"
 echo
 
-# Loop through each file in test directory
-for test_file in test/*; do
+# Loop through each file in tests/test_files directory
+for test_file in tests/test_files/*; do
     # Skip if not a file
     if [ ! -f "$test_file" ]; then
         continue
@@ -49,8 +49,8 @@ echo
 echo "Testing completed! Results saved to: $OUTPUT_FILE"
 echo
 echo "Summary:"
-echo "- Files tested: $(ls test/ | wc -l)"
-echo "- Total API calls: $(ls test/ | wc -l)"
+echo "- Files tested: $(ls tests/test_files/ | wc -l)"
+echo "- Total API calls: $(ls tests/test_files/ | wc -l)"
 echo
 echo "You can view the results with:"
 echo "cat $OUTPUT_FILE"
