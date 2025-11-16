@@ -2,9 +2,9 @@
 
 ## Basic Features
 
-1. [ ] **DSPy Signature Integration for Filename Prediction** — Implement the primary `FileNameAnalysisSignature` using chain-of-thought approach to replace direct OpenAI API calls while maintaining full backward compatibility with existing CLI interface `M`
+1. [x] **DSPy Signature Integration for Filename Prediction** — Implement the primary `FileNameAnalysisSignature` to replace direct OpenAI API calls.`M`
 
-2. [ ] **DSPy Evaluation Metrics Implementation** — Create comprehensive evaluation system using the existing 13 test files, implement exact match metrics, confidence scoring, and BootstrapFewShot optimizer for systematic performance measurement `M`
+2. [ ] ** ** — Create comprehensive evaluation system using all files in tests/test_files folder. Allow for performance tracking through time. `M`
 
 ## Core Infrastructure & Scaling
 

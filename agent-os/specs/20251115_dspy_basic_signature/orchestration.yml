@@ -1,0 +1,17 @@
+task_groups:
+  - name: DSPy Integration Setup
+    claude_code_subagent: implementer
+    standards:
+      - all
+  - name: Replace OpenAI with DSPy
+    claude_code_subagent: implementer
+    standards:
+      - all
+  - name: Maintain Existing CLI Interface
+    claude_code_subagent: implementer
+    standards:
+      - all
+  - name: End-to-End Integration Testing
+    claude_code_subagent: implementer
+    standards:
+      - all
