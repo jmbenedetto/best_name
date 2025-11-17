@@ -1,0 +1,25 @@
+task_groups:
+  - name: DSPy Evaluation Metrics Foundation
+    claude_code_subagent: python-development:python-pro
+    standards:
+      - all
+  - name: CLI Subcommand Implementation
+    claude_code_subagent: python-development:python-pro
+    standards:
+      - all
+  - name: Evaluation Data Processing
+    claude_code_subagent: general-purpose
+    standards:
+      - all
+  - name: Results Generation and Storage
+    claude_code_subagent: python-development:python-pro
+    standards:
+      - all
+  - name: End-to-End Integration
+    claude_code_subagent: python-development:fastapi-pro
+    standards:
+      - all
+  - name: Test Review & Validation
+    claude_code_subagent: implementation-verifier
+    standards:
+      - all

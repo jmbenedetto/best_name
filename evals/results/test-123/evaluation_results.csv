@@ -1,0 +1,2 @@
+timestamp,original_filename,suggested_name,ground_truth_name,score,file_type,text_length,extractor
+2025-11-17T14:31:12.856271,test_eval.txt,20241004_MSB_Test Document for Filename Evaluation,,5.0,txt,49,direct

@@ -30,7 +30,7 @@ from test_utils import (
 )
 
 # Import CLI functions for testing
-from cli import (
+from best_name.cli import (
     FilenameSignature,
     initialize_dspy_lm,
     call_dspy_prediction,

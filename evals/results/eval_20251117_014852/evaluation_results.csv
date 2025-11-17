@@ -1,0 +1,2 @@
+timestamp,original_filename,suggested_name,ground_truth_name,score,file_type,text_length,extractor
+2025-11-17T01:48:57.548528,test_sample.txt,20240101_MyFinance_Financial Planning Budget and Expenses 2024,test_sample,0.0,txt,125,direct
