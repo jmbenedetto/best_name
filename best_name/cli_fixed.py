@@ -1,4 +1,4 @@
-"""CLI module - refactored to make file suggestion the main command while preserving eval."""
+"""CLI module - refactored to use main command instead of suggest subcommand."""
 
 import csv
 import logging
@@ -213,7 +213,59 @@ def handle_file_operations(
         raise click.ClickException(f"Failed to {operation} file: {e}")
 
 
-def process_filename_suggestion(
+@click.group()
+@click.version_option(version="0.1.0", prog_name="best_name")
+def cli() -> None:
+    """Best Name CLI - AI-powered file naming tool."""
+    pass
+
+
+@cli.command()
+@click.argument("file_path", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--conventions",
+    "conventions_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to conventions markdown file",
+)
+@click.option(
+    "--system-prompt",
+    "system_prompt_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to system prompt markdown file",
+)
+@click.option(
+    "--api-key", "api_key_opt", type=str, default=None, help="OpenRouter API key"
+)
+@click.option("--model", "model_opt", type=str, default=None, help="LLM model name")
+@click.option(
+    "--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL"
+)
+@click.option(
+    "--config",
+    "config_path_opt",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to config YAML file (default: config.yaml)",
+)
+@click.option(
+    "--copy",
+    is_flag=True,
+    default=False,
+    help="Create a copy of the file with the suggested name",
+)
+@click.option(
+    "--rename",
+    is_flag=True,
+    default=False,
+    help="Rename the file with the suggested name",
+)
+@click.option(
+    "--verbose", is_flag=True, default=False, help="Show detailed processing steps"
+)
+def suggest(
     file_path: Path,
     conventions_path: Optional[Path],
     system_prompt_path: Optional[Path],
@@ -225,7 +277,8 @@ def process_filename_suggestion(
     rename: bool,
     verbose: bool,
 ) -> None:
-    """Process filename suggestion for a single file."""
+    """Suggest the best filename for FILE_PATH based on its content."""
+
     # Check that copy and rename are mutually exclusive
     if copy and rename:
         raise click.ClickException(
@@ -328,82 +381,6 @@ def process_filename_suggestion(
 
     # Handle file operations
     handle_file_operations(file_path, suggested, copy, rename, verbose)
-
-
-@click.group()
-@click.version_option(version="0.1.0", prog_name="best_name")
-def cli() -> None:
-    """Best Name CLI - AI-powered file naming tool."""
-    pass
-
-
-@cli.command()
-@click.argument("file_path", type=click.Path(exists=True, path_type=Path))
-@click.option(
-    "--conventions",
-    "conventions_path",
-    type=click.Path(path_type=Path),
-    default=None,
-    help="Path to conventions markdown file",
-)
-@click.option(
-    "--system-prompt",
-    "system_prompt_path",
-    type=click.Path(path_type=Path),
-    default=None,
-    help="Path to system prompt markdown file",
-)
-@click.option(
-    "--api-key", "api_key_opt", type=str, default=None, help="OpenRouter API key"
-)
-@click.option("--model", "model_opt", type=str, default=None, help="LLM model name")
-@click.option(
-    "--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL"
-)
-@click.option(
-    "--config",
-    "config_path_opt",
-    type=click.Path(path_type=Path),
-    default=None,
-    help="Path to config YAML file (default: config.yaml)",
-)
-@click.option(
-    "--copy",
-    is_flag=True,
-    default=False,
-    help="Create a copy of the file with the suggested name",
-)
-@click.option(
-    "--rename",
-    is_flag=True,
-    default=False,
-    help="Rename the file with the suggested name",
-)
-@click.option(
-    "--verbose", is_flag=True, default=False, help="Show detailed processing steps"
-)
-def main(
-    file_path: Path,
-    conventions_path: Optional[Path],
-    system_prompt_path: Optional[Path],
-    api_key_opt: Optional[str],
-    model_opt: Optional[str],
-    base_url_opt: Optional[str],
-    config_path_opt: Optional[Path],
-    copy: bool,
-    rename: bool,
-    verbose: bool,
-) -> None:
-    """Suggest the best filename for FILE_PATH based on its content.
-
-    Use --copy to create a copy with the suggested name.
-    Use --rename to rename the original file with the suggested name.
-    """
-    process_filename_suggestion(
-        file_path, conventions_path, system_prompt_path,
-        api_key_opt, model_opt, base_url_opt, config_path_opt,
-        copy, rename, verbose
-    )
 
 
 @cli.command()
@@ -653,25 +630,80 @@ def eval(
     click.echo(f"CSV file: {csv_file}")
 
 
-def cli_wrapper():
-    """CLI wrapper that handles file arguments directly or passes to subcommands."""
-    import sys
-
-    # If no arguments, show help
-    if len(sys.argv) == 1:
-        cli(['--help'])
-        return
-
-    # If first argument is a file and doesn't look like a subcommand or option
-    first_arg = sys.argv[1]
-    if not first_arg.startswith('-') and first_arg != 'eval' and Path(first_arg).exists():
-        # Create a new argv with 'main' subcommand
-        new_argv = ['best_name', 'main'] + sys.argv[1:]
-        cli(new_argv)
-    else:
-        # Pass through to normal CLI
-        cli()
+# Make "suggest" the default command when no subcommand is provided
+@cli.command()
+@click.argument("file_path", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--conventions",
+    "conventions_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to conventions markdown file",
+)
+@click.option(
+    "--system-prompt",
+    "system_prompt_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to system prompt markdown file",
+)
+@click.option(
+    "--api-key", "api_key_opt", type=str, default=None, help="OpenRouter API key"
+)
+@click.option("--model", "model_opt", type=str, default=None, help="LLM model name")
+@click.option(
+    "--base-url", "base_url_opt", type=str, default=None, help="OpenRouter base URL"
+)
+@click.option(
+    "--config",
+    "config_path_opt",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to config YAML file (default: config.yaml)",
+)
+@click.option(
+    "--copy",
+    is_flag=True,
+    default=False,
+    help="Create a copy of the file with the suggested name",
+)
+@click.option(
+    "--rename",
+    is_flag=True,
+    default=False,
+    help="Rename the file with the suggested name",
+)
+@click.option(
+    "--verbose", is_flag=True, default=False, help="Show detailed processing steps"
+)
+@click.pass_context
+def main(ctx,
+    file_path: Path,
+    conventions_path: Optional[Path],
+    system_prompt_path: Optional[Path],
+    api_key_opt: Optional[str],
+    model_opt: Optional[str],
+    base_url_opt: Optional[str],
+    config_path_opt: Optional[Path],
+    copy: bool,
+    rename: bool,
+    verbose: bool,
+) -> None:
+    """Default command - suggest filename for FILE_PATH."""
+    # Forward all parameters to suggest function
+    ctx.forward(suggest,
+        file_path=file_path,
+        conventions_path=conventions_path,
+        system_prompt_path=system_prompt_path,
+        api_key_opt=api_key_opt,
+        model_opt=model_opt,
+        base_url_opt=base_url_opt,
+        config_path_opt=config_path_opt,
+        copy=copy,
+        rename=rename,
+        verbose=verbose
+    )
 
 
 if __name__ == "__main__":
-    cli_wrapper()
+    cli()

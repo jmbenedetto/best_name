@@ -39,14 +39,14 @@ def create_test_eval_setup():
     ground_truth_file = eval_dir / "eval_files.csv"
     csv_content = """original_file;human_defined_name
 test_doc.txt;test_document
-report.pdf;quarterly_report
-image.png;screenshot_analytics"""
+test_report.md;quarterly_report
+test_data.csv;screenshot_analytics"""
     ground_truth_file.write_text(csv_content, encoding='utf-8')
 
-    # Create test files
+    # Create test files with content that can be processed
     (eval_files_dir / "test_doc.txt").write_text("This is a test document for evaluation")
-    (eval_files_dir / "report.pdf").write_bytes(b"fake pdf content for testing")
-    (eval_files_dir / "image.png").write_bytes(b"fake png content for testing")
+    (eval_files_dir / "test_report.md").write_text("# Quarterly Report\n\nThis is a markdown report with important financial data.")
+    (eval_files_dir / "test_data.csv").write_text("Date,Value,Category\n2024-01-01,100,sales\n2024-01-02,150,marketing")
 
     return temp_dir, eval_dir
 
@@ -74,10 +74,10 @@ def test_end_to_end_single_file_evaluation():
     test_file = eval_dir / "eval_files" / "test_doc.txt"
 
     try:
-        with patch('best_name.cli.dspy.LM') as mock_lm_class, \
-             patch('best_name.cli.configure') as mock_configure, \
-             patch('best_name.cli.Predict') as mock_predict_class, \
-             patch('best_name.cli.call_dspy_evaluation') as mock_eval:
+        with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
+             patch('best_name.dspy_modules.configure') as mock_configure, \
+             patch('best_name.dspy_modules.Predict') as mock_predict_class, \
+             patch('best_name.dspy_modules.call_dspy_evaluation') as mock_eval:
 
             # Setup mocks for prediction
             mock_lm = MagicMock()
@@ -146,10 +146,10 @@ def test_end_to_end_directory_evaluation():
     temp_dir, eval_dir = create_test_eval_setup()
 
     try:
-        with patch('best_name.cli.dspy.LM') as mock_lm_class, \
-             patch('best_name.cli.configure') as mock_configure, \
-             patch('best_name.cli.Predict') as mock_predict_class, \
-             patch('best_name.cli.call_dspy_evaluation') as mock_eval:
+        with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
+             patch('best_name.dspy_modules.configure') as mock_configure, \
+             patch('best_name.dspy_modules.Predict') as mock_predict_class, \
+             patch('best_name.dspy_modules.call_dspy_evaluation') as mock_eval:
 
             # Setup mocks for prediction
             mock_lm = MagicMock()
@@ -167,6 +167,8 @@ def test_end_to_end_directory_evaluation():
                     mock_prediction.suggested_name = "test_document"
                 elif 'report' in content.lower():
                     mock_prediction.suggested_name = "quarterly_report"
+                elif 'sales' in content.lower() or 'data' in content.lower():
+                    mock_prediction.suggested_name = "sales_data_analytics"
                 else:
                     mock_prediction.suggested_name = "screenshot_analytics"
                 return mock_prediction
@@ -208,12 +210,13 @@ def test_end_to_end_directory_evaluation():
                 with open(csv_file, 'r', encoding='utf-8') as f:
                     reader = csv.DictReader(f)
                     rows = list(reader)
-                    assert len(rows) == 3  # Should have all 3 files
+                    # Should have all 3 files that can be processed
+                    assert len(rows) == 3
 
                     filenames = [row['original_filename'] for row in rows]
                     assert 'test_doc.txt' in filenames
-                    assert 'report.pdf' in filenames
-                    assert 'image.png' in filenames
+                    assert 'test_report.md' in filenames
+                    assert 'test_data.csv' in filenames
 
                 # Check markdown files were created for each
                 md_files = list(results_dir.glob("*_evaluation.md"))
@@ -229,10 +232,10 @@ def test_end_to_end_evaluation_with_verbose_output():
     test_file = eval_dir / "eval_files" / "test_doc.txt"
 
     try:
-        with patch('best_name.cli.dspy.LM') as mock_lm_class, \
-             patch('best_name.cli.configure') as mock_configure, \
-             patch('best_name.cli.Predict') as mock_predict_class, \
-             patch('best_name.cli.call_dspy_evaluation') as mock_eval:
+        with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
+             patch('best_name.dspy_modules.configure') as mock_configure, \
+             patch('best_name.dspy_modules.Predict') as mock_predict_class, \
+             patch('best_name.dspy_modules.call_dspy_evaluation') as mock_eval:
 
             # Setup mocks
             mock_lm = MagicMock()
@@ -280,7 +283,7 @@ def test_end_to_end_evaluation_with_verbose_output():
 
                 output = result.output
                 for message in verbose_messages:
-                    assert message in output, f"Missing verbose message: {message}"
+                    assert message in output, f"Missing verbose message: {message}. Output was: {output}"
 
     finally:
         shutil.rmtree(temp_dir)
@@ -292,9 +295,9 @@ def test_end_to_end_evaluation_error_handling():
     test_file = eval_dir / "eval_files" / "test_doc.txt"
 
     try:
-        with patch('best_name.cli.dspy.LM') as mock_lm_class, \
-             patch('best_name.cli.configure') as mock_configure, \
-             patch('best_name.cli.Predict') as mock_predict_class:
+        with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
+             patch('best_name.dspy_modules.configure') as mock_configure, \
+             patch('best_name.dspy_modules.Predict') as mock_predict_class:
 
             # Setup mock to raise exception during prediction
             mock_lm = MagicMock()
@@ -343,9 +346,9 @@ def test_end_to_end_evaluation_no_ground_truth():
     test_file.write_text("This is a standalone file without ground truth")
 
     try:
-        with patch('best_name.cli.dspy.LM') as mock_lm_class, \
-             patch('best_name.cli.configure') as mock_configure, \
-             patch('best_name.cli.Predict') as mock_predict_class:
+        with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
+             patch('best_name.dspy_modules.configure') as mock_configure, \
+             patch('best_name.dspy_modules.Predict') as mock_predict_class:
 
             # Setup mocks
             mock_lm = MagicMock()

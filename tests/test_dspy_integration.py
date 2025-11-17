@@ -175,12 +175,12 @@ def test_config_model_update():
 
 def test_dependency_configuration():
     """Test that pyproject.toml includes DSPy dependency."""
-    pyproject_path = Path(__file__).parent / "pyproject.toml"
+    pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
 
     if pyproject_path.exists():
-        import toml
-        with open(pyproject_path, 'r') as f:
-            pyproject = toml.load(f)
+        import tomllib
+        with open(pyproject_path, 'rb') as f:
+            pyproject = tomllib.load(f)
 
         dependencies = pyproject.get('project', {}).get('dependencies', [])
 
