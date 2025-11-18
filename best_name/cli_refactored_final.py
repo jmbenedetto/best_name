@@ -23,33 +23,6 @@ from .file_processing import (
 from .utils import load_yaml_config, resolve_path, sanitize_filename
 
 
-class DefaultCommandGroup(click.Group):
-    """Custom Click Group that invokes a default command when a file path is provided."""
-
-    def __init__(self, *args, **kwargs):
-        self.default_command = kwargs.pop('default_command', None)
-        super().__init__(*args, **kwargs)
-
-    def resolve_command(self, ctx, args):
-        """Override resolve_command to handle default command logic."""
-        try:
-            # Try to resolve normally first
-            return super().resolve_command(ctx, args)
-        except click.UsageError:
-            # If that fails and we have a default command, check if first arg looks like a file
-            if self.default_command and args and not args[0].startswith('-'):
-                # Check if it's a path that exists or looks like a path
-                potential_path = Path(args[0])
-                if potential_path.exists() or '/' in args[0] or '\\' in args[0] or '.' in args[0]:
-                    # Invoke default command with the arguments
-                    cmd_name = self.default_command
-                    cmd = self.commands.get(cmd_name)
-                    if cmd:
-                        return cmd_name, cmd, args
-            # Re-raise the original error
-            raise
-
-
 def setup_logging_and_warnings(verbose: bool = False) -> None:
     """Setup logging and warning suppression based on verbosity."""
     if not verbose:
@@ -357,149 +330,7 @@ def process_filename_suggestion(
     handle_file_operations(file_path, suggested, copy, rename, verbose)
 
 
-def process_evaluation_with_error_handling(
-    file_data: dict,
-    conventions_md: str,
-    model: str,
-    api_key: str,
-    base_url: str,
-    csv_file: Path,
-    results_dir: Path,
-    run_id: str,
-    verbose: bool
-) -> bool:
-    """Process a single file evaluation with comprehensive error handling.
-
-    Returns True if successful, False if there was an error.
-    """
-    process_file = file_data['file_path']
-    content = file_data['content']
-
-    try:
-        if verbose:
-            click.echo(f"  Processing: {process_file.name}")
-
-        # Generate filename suggestion with error handling
-        try:
-            suggested_name, confidence = call_dspy_prediction(
-                file_content=content,
-                naming_conventions=conventions_md,
-                model=model,
-                api_key=api_key,
-                base_url=base_url,
-                verbose=verbose
-            )
-            suggested_name = sanitize_filename(suggested_name)
-
-            if verbose:
-                click.echo(f"    Generated suggestion: {suggested_name}")
-                if confidence is not None:
-                    click.echo(f"    Confidence: {confidence}")
-
-        except Exception as prediction_error:
-            if verbose:
-                click.echo(f"    Prediction error: {prediction_error}")
-            # Use fallback name for failed predictions
-            suggested_name = f"prediction_failed_{process_file.stem}"
-            confidence = None
-
-        # Get ground truth name
-        ground_truth_name = file_data['ground_truth_name']
-
-        # Evaluate the suggestion with error handling
-        evaluation_score = 5.0  # Default score
-        if ground_truth_name:
-            try:
-                evaluation_score = call_dspy_evaluation(
-                    suggested_name=suggested_name,
-                    ground_truth_name=ground_truth_name,
-                    file_content=content,
-                    model=model,
-                    api_key=api_key,
-                    base_url=base_url,
-                    verbose=verbose
-                )
-                if verbose:
-                    click.echo(f"    Evaluation score: {evaluation_score:.1f}/10")
-
-            except Exception as evaluation_error:
-                if verbose:
-                    click.echo(f"    Evaluation error: {evaluation_error}")
-                # Use default score when evaluation fails
-                evaluation_score = 5.0
-        else:
-            if verbose:
-                click.echo(f"    No ground truth available, using default score: 5.0/10")
-
-        # Get metadata
-        file_type = file_data['file_type']
-        text_length = file_data['text_length']
-        extractor = file_data['extractor']
-
-        # Write to CSV with error handling
-        try:
-            with open(csv_file, 'a', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f)
-                writer.writerow([
-                    datetime.now().isoformat(),
-                    process_file.name,
-                    suggested_name,
-                    ground_truth_name,
-                    f"{evaluation_score:.1f}",
-                    file_type,
-                    text_length,
-                    extractor
-                ])
-        except Exception as csv_error:
-            if verbose:
-                click.echo(f"    CSV write error: {csv_error}")
-            # Continue processing even if CSV write fails
-            return False
-
-        # Create individual markdown file with error handling
-        try:
-            md_file = results_dir / f"{process_file.stem}_evaluation.md"
-            md_content = f"""# Evaluation Results: {process_file.name}
-
-**Run ID:** {run_id}
-**Timestamp:** {datetime.now().isoformat()}
-**File Path:** {process_file}
-
-## File Information
-- **Original Filename:** {process_file.name}
-- **File Type:** {file_type}
-- **Content Length:** {text_length} characters
-- **Extractor:** {extractor}
-
-## Evaluation Results
-- **Suggested Name:** `{suggested_name}`
-- **Ground Truth Name:** `{ground_truth_name}`
-- **Evaluation Score:** {evaluation_score:.1f}/10
-- **Confidence Score:** {confidence if confidence is not None else 'Not available'}
-
-## File Content Preview
-```
-{content[:500]}{'...' if len(content) > 500 else ''}
-```
-
----
-*Generated by best_name evaluation system*
-"""
-            md_file.write_text(md_content, encoding='utf-8')
-        except Exception as md_error:
-            if verbose:
-                click.echo(f"    Markdown file error: {md_error}")
-            # Continue processing even if markdown creation fails
-
-        return True
-
-    except Exception as file_error:
-        if verbose:
-            click.echo(f"    Unexpected error processing {process_file.name}: {file_error}")
-        return False
-
-
-@click.group(cls=DefaultCommandGroup, default_command='main')
+@click.group()
 @click.version_option(version="0.1.0", prog_name="best_name")
 def cli() -> None:
     """Best Name CLI - AI-powered file naming tool."""
@@ -709,56 +540,138 @@ def eval(
     if verbose:
         click.echo(f"Found {len(processed_files)} files to evaluate")
 
-    if not processed_files:
-        click.echo("No files found to evaluate.")
-        return
-
     # Create results directory
     results_dir = project_dir / "evals" / "results" / run_id
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    if verbose:
-        click.echo(f"Results will be saved to: {results_dir}")
-
     # Create CSV file for results
     csv_file = results_dir / "evaluation_results.csv"
-    try:
-        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                'timestamp', 'original_filename', 'suggested_name',
-                'ground_truth_name', 'score', 'file_type', 'text_length', 'extractor'
-            ])
-        if verbose:
-            click.echo(f"Created CSV file: {csv_file}")
-    except Exception as e:
-        raise click.ClickException(f"Failed to create CSV file: {e}")
+    with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            'timestamp', 'original_filename', 'suggested_name',
+            'ground_truth_name', 'score', 'file_type', 'text_length', 'extractor'
+        ])
 
-    # Process each file with comprehensive error handling
-    successful_evaluations = 0
-    failed_evaluations = 0
-
+    # Process each file
     for file_data in processed_files:
-        if process_evaluation_with_error_handling(
-            file_data, conventions_md, model, api_key, base_url,
-            csv_file, results_dir, run_id, verbose
-        ):
-            successful_evaluations += 1
-        else:
-            failed_evaluations += 1
+        try:
+            process_file = file_data['file_path']
+            content = file_data['content']
 
-    # Final summary
+            if verbose:
+                click.echo(f"  Processing: {process_file.name}")
+
+            # Generate filename suggestion
+            suggested_name, confidence = call_dspy_prediction(
+                file_content=content,
+                naming_conventions=conventions_md,
+                model=model,
+                api_key=api_key,
+                base_url=base_url,
+                verbose=verbose
+            )
+            suggested_name = sanitize_filename(suggested_name)
+
+            # Get ground truth name
+            ground_truth_name = file_data['ground_truth_name']
+
+            # Evaluate the suggestion
+            if ground_truth_name:
+                evaluation_score = call_dspy_evaluation(
+                    suggested_name=suggested_name,
+                    ground_truth_name=ground_truth_name,
+                    file_content=content,
+                    model=model,
+                    api_key=api_key,
+                    base_url=base_url,
+                    verbose=verbose
+                )
+            else:
+                evaluation_score = 5.0  # Default score if no ground truth
+
+            # Get metadata
+            file_type = file_data['file_type']
+            text_length = file_data['text_length']
+            extractor = file_data['extractor']
+
+            # Write to CSV
+            with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    datetime.now().isoformat(),
+                    process_file.name,
+                    suggested_name,
+                    ground_truth_name,
+                    f"{evaluation_score:.1f}",
+                    file_type,
+                    text_length,
+                    extractor
+                ])
+
+            # Create individual markdown file
+            md_file = results_dir / f"{process_file.stem}_evaluation.md"
+            md_content = f"""# Evaluation Results: {process_file.name}
+
+**Run ID:** {run_id}
+**Timestamp:** {datetime.now().isoformat()}
+**File Path:** {process_file}
+
+## File Information
+- **Original Filename:** {process_file.name}
+- **File Type:** {file_type}
+- **Content Length:** {text_length} characters
+- **Extractor:** {extractor}
+
+## Evaluation Results
+- **Suggested Name:** `{suggested_name}`
+- **Ground Truth Name:** `{ground_truth_name}`
+- **Evaluation Score:** {evaluation_score:.1f}/10
+
+## File Content Preview
+```
+{content[:500]}{'...' if len(content) > 500 else ''}
+```
+
+---
+*Generated by best_name evaluation system*
+"""
+            md_file.write_text(md_content, encoding='utf-8')
+
+            if verbose:
+                click.echo(f"    Suggested: {suggested_name}")
+                click.echo(f"    Score: {evaluation_score:.1f}/10")
+
+        except Exception as e:
+            if verbose:
+                click.echo(f"    Error: {e}")
+            # Continue processing other files
+            continue
+
     click.echo(f"\nEvaluation complete!")
     click.echo(f"Results saved to: {results_dir}")
     click.echo(f"CSV file: {csv_file}")
 
-    if verbose or failed_evaluations > 0:
-        click.echo(f"\nSummary:")
-        click.echo(f"  Successful evaluations: {successful_evaluations}")
-        if failed_evaluations > 0:
-            click.echo(f"  Failed evaluations: {failed_evaluations}")
-            click.echo(f"  Total files processed: {len(processed_files)}")
+
+def cli_wrapper():
+    """CLI wrapper that handles file arguments directly or passes to subcommands."""
+    import sys
+
+    # If no arguments, show help
+    if len(sys.argv) == 1:
+        cli(['--help'])
+        return
+
+    # If first argument is a file and doesn't look like a subcommand or option
+    first_arg = sys.argv[1]
+    if not first_arg.startswith('-') and first_arg != 'eval' and Path(first_arg).exists():
+        # Create a new argv with 'main' subcommand
+        new_argv = ['best_name', 'main'] + sys.argv[1:]
+        cli(new_argv)
+    else:
+        # Pass through to normal CLI
+        cli()
 
 
 if __name__ == "__main__":
-    cli()
+    cli_wrapper()

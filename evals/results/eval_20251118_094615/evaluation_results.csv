@@ -1,0 +1,2 @@
+timestamp,original_filename,suggested_name,ground_truth_name,score,file_type,text_length,extractor
+2025-11-18T09:46:15.581176,test_file.txt,Test_Content,,5.0,txt,13,direct
