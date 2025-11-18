@@ -137,25 +137,25 @@ Total Tasks: 25
 ### Integration and Error Handling
 
 #### Task Group 5: End-to-End Integration
-**Dependencies:** Task Groups 1-4, 6
+**Dependencies:** Task Groups 1-4
 
-- [ ] 5.0 Complete end-to-end evaluation integration
-  - [ ] 5.1 Write 2-5 focused tests for complete evaluation workflow
+- [x] 5.0 Complete end-to-end evaluation integration
+  - [x] 5.1 Write 2-5 focused tests for complete evaluation workflow
     - Test only critical end-to-end scenarios (single file eval, directory eval, results generation)
     - Skip exhaustive testing of all integration edge cases
-  - [ ] 5.2 Integrate evaluation workflow end-to-end
+  - [x] 5.2 Integrate evaluation workflow end-to-end
     - Connect CLI → data loading → content extraction → DSPy evaluation → results generation
     - Ensure smooth data flow between all components
     - Follow existing error handling patterns from test framework
-  - [ ] 5.3 Add comprehensive error handling
+  - [x] 5.3 Add comprehensive error handling
     - Graceful API failure handling (reuse patterns from tests/run_tests.sh)
     - File processing error recovery
     - DSPy prediction error handling with fallback behavior
-  - [ ] 5.4 Implement verbose output for evaluation
+  - [x] 5.4 Implement verbose output for evaluation
     - Show evaluation progress and key steps when --verbose flag used
     - Display evaluation scores and results summary
     - Follow existing verbose patterns from main CLI
-  - [ ] 5.5 Ensure end-to-end integration tests pass
+  - [x] 5.5 Ensure end-to-end integration tests pass
     - Run ONLY the 2-5 tests written in 5.1
     - Verify complete evaluation workflow functions correctly
     - Do NOT run the entire test suite at this stage

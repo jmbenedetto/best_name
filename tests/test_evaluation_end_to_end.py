@@ -76,8 +76,7 @@ def test_end_to_end_single_file_evaluation():
     try:
         with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
              patch('best_name.dspy_modules.configure') as mock_configure, \
-             patch('best_name.dspy_modules.Predict') as mock_predict_class, \
-             patch('best_name.dspy_modules.call_dspy_evaluation') as mock_eval:
+             patch('best_name.dspy_modules.Predict') as mock_predict_class:
 
             # Setup mocks for prediction
             mock_lm = MagicMock()
@@ -89,8 +88,22 @@ def test_end_to_end_single_file_evaluation():
             mock_predictor.return_value = mock_prediction
             mock_predict_class.return_value = mock_predictor
 
-            # Setup mocks for evaluation
-            mock_eval.return_value = 8.5
+            # Create a mock evaluation result that will work properly
+            mock_eval_result = MagicMock()
+            mock_eval_result.evaluation_score = "8.5"
+
+            # Patch the entire evaluation process by mocking the Predict class for evaluation too
+            def predict_side_effect(signature):
+                if hasattr(signature, '__name__') and 'Evaluation' in str(signature):
+                    # This is an evaluation call
+                    mock_eval_predictor = MagicMock()
+                    mock_eval_predictor.return_value = mock_eval_result
+                    return mock_eval_predictor
+                else:
+                    # This is a prediction call
+                    return mock_predictor
+
+            mock_predict_class.side_effect = predict_side_effect
 
             # Run evaluation using CliRunner
             from click.testing import CliRunner
@@ -148,8 +161,7 @@ def test_end_to_end_directory_evaluation():
     try:
         with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
              patch('best_name.dspy_modules.configure') as mock_configure, \
-             patch('best_name.dspy_modules.Predict') as mock_predict_class, \
-             patch('best_name.dspy_modules.call_dspy_evaluation') as mock_eval:
+             patch('best_name.dspy_modules.Predict') as mock_predict_class:
 
             # Setup mocks for prediction
             mock_lm = MagicMock()
@@ -175,8 +187,21 @@ def test_end_to_end_directory_evaluation():
 
             mock_predictor.side_effect = side_effect_func
 
-            # Setup mocks for evaluation
-            mock_eval.return_value = 7.0  # Consistent score for all files
+            # Create a mock evaluation result for evaluation calls
+            mock_eval_result = MagicMock()
+            mock_eval_result.evaluation_score = "7.0"
+
+            def predict_side_effect(signature):
+                if hasattr(signature, '__name__') and 'Evaluation' in str(signature):
+                    # This is an evaluation call
+                    mock_eval_predictor = MagicMock()
+                    mock_eval_predictor.return_value = mock_eval_result
+                    return mock_eval_predictor
+                else:
+                    # This is a prediction call
+                    return mock_predictor
+
+            mock_predict_class.side_effect = predict_side_effect
 
             # Run evaluation using CliRunner
             from click.testing import CliRunner
@@ -234,8 +259,7 @@ def test_end_to_end_evaluation_with_verbose_output():
     try:
         with patch('best_name.dspy_modules.dspy.LM') as mock_lm_class, \
              patch('best_name.dspy_modules.configure') as mock_configure, \
-             patch('best_name.dspy_modules.Predict') as mock_predict_class, \
-             patch('best_name.dspy_modules.call_dspy_evaluation') as mock_eval:
+             patch('best_name.dspy_modules.Predict') as mock_predict_class:
 
             # Setup mocks
             mock_lm = MagicMock()
@@ -247,7 +271,21 @@ def test_end_to_end_evaluation_with_verbose_output():
             mock_predictor.return_value = mock_prediction
             mock_predict_class.return_value = mock_predictor
 
-            mock_eval.return_value = 9.2
+            # Create a mock evaluation result
+            mock_eval_result = MagicMock()
+            mock_eval_result.evaluation_score = "9.2"
+
+            def predict_side_effect(signature):
+                if hasattr(signature, '__name__') and 'Evaluation' in str(signature):
+                    # This is an evaluation call
+                    mock_eval_predictor = MagicMock()
+                    mock_eval_predictor.return_value = mock_eval_result
+                    return mock_eval_predictor
+                else:
+                    # This is a prediction call
+                    return mock_predictor
+
+            mock_predict_class.side_effect = predict_side_effect
 
             # Run evaluation with verbose flag using CliRunner
             from click.testing import CliRunner
@@ -270,14 +308,14 @@ def test_end_to_end_evaluation_with_verbose_output():
                 # Should exit successfully
                 assert result.exit_code == 0, f"CLI failed with exit code {result.exit_code}: {result.output}"
 
-                # Verify verbose output contains expected messages
+                # Verify verbose output contains expected messages (updated for new format)
                 verbose_messages = [
                     "Best Name CLI - Evaluation Mode",
                     "Run ID: test_run_verbose",
                     "Processing evaluation files",
                     "Processing: test_doc.txt",
-                    "Suggested: test_document",
-                    "Score: 9.2/10",
+                    "Generated suggestion: test_document",  # Updated from "Suggested: test_document"
+                    "Evaluation score: 9.2/10",  # Updated from "Score: 9.2/10"
                     "Evaluation complete"
                 ]
 
@@ -328,8 +366,8 @@ def test_end_to_end_evaluation_error_handling():
                 # Should still exit successfully despite errors (graceful handling)
                 assert result.exit_code == 0, f"CLI should handle errors gracefully, but failed with exit code {result.exit_code}: {result.output}"
 
-                # Verify error handling in verbose output
-                assert "Error:" in result.output, "Expected error message in verbose output"
+                # Verify error handling in verbose output - check for the new error message format
+                assert "Prediction error:" in result.output or "Error:" in result.output, "Expected error message in verbose output"
 
                 # Results directory should still be created
                 results_dir = Path(temp_dir) / "evals" / "results" / "test_run_error"

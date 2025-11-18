@@ -6,18 +6,8 @@ from typing import Optional
 
 import click
 
-
-def read_text_file(file_path: Path) -> str:
-    """Read text file with encoding fallback."""
-    try:
-        return file_path.read_text(encoding="utf-8", errors="ignore")
-    except Exception:
-        # fallback to binary read and decode best-effort
-        data = file_path.read_bytes()
-        try:
-            return data.decode("utf-8", errors="ignore")
-        except Exception:
-            return ""
+# Import read_text_file from utils to avoid duplication
+from .utils import read_text_file
 
 
 def extract_content_with_docling(file_path: Path) -> Optional[str]:
