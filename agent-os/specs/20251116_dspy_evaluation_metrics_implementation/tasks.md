@@ -137,7 +137,7 @@ Total Tasks: 25
 ### Integration and Error Handling
 
 #### Task Group 5: End-to-End Integration
-**Dependencies:** Task Groups 1-4
+**Dependencies:** Task Groups 1-4, 6
 
 - [ ] 5.0 Complete end-to-end evaluation integration
   - [ ] 5.1 Write 2-5 focused tests for complete evaluation workflow
@@ -169,7 +169,7 @@ Total Tasks: 25
 ### CLI API Refactoring
 
 #### Task Group 6: CLI API Modularization and Refactoring
-**Dependencies:** Task Groups 1-5
+**Dependencies:** Task Groups 1-4
 
 - [ ] 6.0 Complete CLI API refactoring and modularization
   - [ ] 6.1 Write 3-8 focused tests for refactored CLI structure
@@ -273,8 +273,8 @@ Recommended implementation sequence:
 2. CLI Integration (Task Group 2)
 3. Evaluation Data Processing (Task Group 3)
 4. Results Generation and Storage (Task Group 4)
-5. Integration and Error Handling (Task Group 5)
-6. CLI API Refactoring (Task Group 6)
+5. CLI API Refactoring (Task Group 6)
+6. Integration and Error Handling (Task Group 5)
 7. Testing and Validation (Task Group 7)
 
 ## Key Technical Constraints

@@ -1,6 +1,8 @@
 """Best Name CLI - AI-powered file naming tool."""
 
-from .main_cli import main as cli
+# Import the CLI function from cli module
+from .cli import cli
 
 __version__ = "0.1.0"
+
 __all__ = ["cli"]
